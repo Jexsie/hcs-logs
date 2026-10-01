@@ -20,10 +20,10 @@ export const asParcel = (record: unknown) =>
 export const asEvent = (record: unknown) =>
   isObject(record) && record.kind === "event" ? (record as EventDetails) : undefined;
 
-// "out-for-delivery" -> "Out for delivery"
+// "shipped" -> "Shipped"
 export const formatEventType = (type?: string) => {
   if (!type) {
-    return "Event recorded";
+    return "Updated";
   }
   const words = type.split("-").join(" ");
   return words.charAt(0).toUpperCase() + words.slice(1);

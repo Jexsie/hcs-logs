@@ -11,10 +11,12 @@ describe("record details for the page", () => {
   });
 
   it("reads an event record and labels its type", () => {
-    const event = asEvent(readRecord(serializeRecord(generateEvent("IND-2026-0041", "out-for-delivery"))));
+    const event = asEvent(readRecord(serializeRecord(generateEvent("IND-2026-0041", "customs"))));
 
-    expect(formatEventType(event?.type)).toBe("Out for delivery");
-    expect(formatEventType(undefined)).toBe("Event recorded");
+    expect(formatEventType(event?.type)).toBe("Customs");
+    expect(event?.location).toBe("Malaba border post");
+    expect(formatEventType("out-for-delivery")).toBe("Out for delivery");
+    expect(formatEventType(undefined)).toBe("Updated");
   });
 
   it("treats bytes that are not JSON as no record", () => {

@@ -84,13 +84,21 @@ the others stay verified.
 vocabulary, just a parcel ID and the shipment's progress. It needs no wallet, account or
 login, and has no server side of its own: the browser talks straight to the public mirror node.
 
-1. **Search** a parcel ID. The page shows the shipment's latest update and its history, newest first. Each step is
-   marked **Verified** and links to its transaction on HashScan. Because the ledger holds only fingerprints, a step
-   reads "Shipment registered" or "Shipment updated" with its time, and nothing more.
-2. **Add shipping documents** (optional). A customer who received the record files can drop them on the page. Each
-   file's raw bytes are hashed in the browser and matched against the shipment's records; only a matching file is then
-   read, filling in the route, shipper, consignee, package and handler, and naming each step (for example "Picked up ·
-   Malaba border post"). A file that does not match is reported and never displayed. Files are never uploaded.
+Search a parcel ID and the page shows the shipment's **status**, its details (route, shipper, consignee, package,
+handler) and a **timeline** that grows as events are appended: Registered, then Shipped, Customs and Delivered. Each
+step is marked **Verified** and links to its transaction on HashScan.
+
+How the details stay trustworthy:
+
+- The site's server serves the hosting member's record files from `data/`, byte for byte, at `/api/parcels/<id>`.
+- The browser fetches that parcel's anchors from the public mirror node, hashes each file with Web Crypto, and shows a
+  record only if its hash matches an anchor. The server can supply details but cannot make an edited record look
+  genuine: a changed record is reported and left out, and its step reads "Updated · Details unavailable".
+- Hedera still holds only `{ v, parcelId, kind, hash }`. No business detail is ever put on the ledger.
+
+**Hosting this page publishes your records.** Anyone who knows a parcel ID can read that parcel's details from the
+site, and only parcels in the host's own `data/` show details. A parcel anchored by another member shows its timeline
+steps without details.
 
 Links such as `/?parcel=IND-2026-0041` open straight on a parcel, so a member can send a customer a verification link.
 
@@ -112,8 +120,9 @@ npm run keys:generate -- --create-accounts   # paste the output into .env
 npm run token:create               # then set FREIGHT_TOKEN_ID in .env
 npm run topic:create               # then set TOPIC_ID in .env
 npm run submit -- parcel IND-2026-0041 --member lakeside
-npm run submit -- event IND-2026-0041 --member nile --type picked-up
-npm run submit -- event IND-2026-0041 --committee 2 --type at-hub
+npm run submit -- event IND-2026-0041 --member lakeside --type shipped
+npm run submit -- event IND-2026-0041 --committee 2 --type customs
+npm run submit -- event IND-2026-0041 --member lakeside --type delivered
 npm run verify -- IND-2026-0041
 npm run next:dev                   # then open http://localhost:3000/?parcel=IND-2026-0041
 ```
@@ -152,7 +161,8 @@ packages/nextjs/
   scripts/      one file per root script
   test/         Vitest suites; live.test.ts runs only with test:network
   app/          the public verification page
-  components/verify/  search form, anchored trail and in-browser file check
+  components/verify/  search form, status card and timeline
+  app/api/parcels/   serves a parcel's record files for the page to verify
   hooks/useParcelSearch.ts  mirror node lookup for the page
 ```
 

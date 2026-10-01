@@ -138,7 +138,7 @@ describe.skipIf(!enabled)("on the network", () => {
     const treasuryBefore = await balanceOf(operatorId);
     const infraBefore = await balanceOf(infraId);
     const publish = publishToTopic(operatorClient, topicId, tokenId, 3, [committee[1]]);
-    const bytes = serializeRecord(generateEvent(PARCEL_ID, "picked-up"));
+    const bytes = serializeRecord(generateEvent(PARCEL_ID, "shipped"));
 
     const { anchor, transactionId } = await anchorRecord(publish, PARCEL_ID, "event", bytes, dataDir);
     console.log(`Committee submission by representative 2: ${transactionId}`);
@@ -150,7 +150,7 @@ describe.skipIf(!enabled)("on the network", () => {
 
   it("rejects a submission whose max_custom_fee is below the topic fee, and writes no file", async () => {
     const publish = publishToTopic(memberClient("nile"), topicId, tokenId, 2);
-    const bytes = serializeRecord(generateEvent(PARCEL_ID, "in-transit"));
+    const bytes = serializeRecord(generateEvent(PARCEL_ID, "customs"));
 
     const message = await messageOf(anchorRecord(publish, PARCEL_ID, "event", bytes, dataDir));
     console.log(`max_custom_fee rejection: ${message}`);

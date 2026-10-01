@@ -32,6 +32,9 @@ const parcelDir = (parcelId: string, dataDir = DEFAULT_DATA_DIR) => {
   return path.join(dataDir, parcelId);
 };
 
+export const parcelExists = (parcelId: string, dataDir = DEFAULT_DATA_DIR) =>
+  fs.existsSync(parcelDir(parcelId, dataDir));
+
 export const recordPath = (parcelId: string, fileName: string, dataDir = DEFAULT_DATA_DIR) => {
   assertFileName(fileName);
   return path.join(parcelDir(parcelId, dataDir), fileName);

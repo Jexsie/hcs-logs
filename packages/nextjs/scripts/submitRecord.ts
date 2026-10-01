@@ -38,7 +38,7 @@ const readArgs = () => {
   const { positionals, values } = parseArgs({
     allowPositionals: true,
     options: {
-      type: { type: "string", default: "in-transit" },
+      type: { type: "string", default: "shipped" },
       member: { type: "string" },
       committee: { type: "string" },
     },

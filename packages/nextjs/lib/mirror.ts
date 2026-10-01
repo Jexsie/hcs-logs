@@ -29,10 +29,12 @@ const fetchTopicMessages = async (mirrorUrl: string, topicId: string) => {
   return messages;
 };
 
-// atob and TextDecoder rather than Buffer, so this runs in the browser as well as in Node.
+// atob rather than Buffer, so this runs in the browser as well as in Node.
+export const base64ToBytes = (base64: string) => Uint8Array.from(atob(base64), character => character.charCodeAt(0));
+
 const decodeJson = (base64: string): unknown => {
   try {
-    return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(base64), character => character.charCodeAt(0))));
+    return JSON.parse(new TextDecoder().decode(base64ToBytes(base64)));
   } catch {
     return undefined;
   }

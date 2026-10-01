@@ -15,7 +15,8 @@ import { Anchor } from "~~/lib/types";
 // Sends one anchor message, resolving with its transaction id once it has reached consensus.
 type Publish = (message: string) => Promise<string>;
 
-export const EVENT_TYPES = ["picked-up", "in-transit", "at-hub", "out-for-delivery", "delivered"] as const;
+// A parcel's life after it is registered, in order.
+export const EVENT_TYPES = ["shipped", "customs", "delivered"] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -32,11 +33,17 @@ export const generateParcel = (parcelId: string, handler: string, now = new Date
   registeredAt: now.toISOString(),
 });
 
+const EVENT_LOCATIONS: Record<EventType, string> = {
+  shipped: "Kampala, UG",
+  customs: "Malaba border post",
+  delivered: "Mombasa, KE",
+};
+
 export const generateEvent = (parcelId: string, type: EventType, now = new Date()) => ({
   parcelId,
   kind: "event",
   type,
-  location: "Malaba border post",
+  location: EVENT_LOCATIONS[type],
   recordedAt: now.toISOString(),
 });
 

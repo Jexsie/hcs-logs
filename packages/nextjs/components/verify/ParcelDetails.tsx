@@ -13,16 +13,16 @@ const Detail = ({ label, value }: { label: string; value?: string | number }) =>
 export const ParcelDetails = ({
   parcelId,
   network,
-  registered,
+  status,
   latest,
-  latestLabel,
+  registered,
   record,
 }: {
   parcelId: string;
   network: HederaNetwork;
-  registered?: AnchoredMessage;
+  status: string;
   latest: AnchoredMessage;
-  latestLabel: string;
+  registered?: AnchoredMessage;
   record?: unknown;
 }) => {
   const parcel = asParcel(record);
@@ -34,16 +34,16 @@ export const ParcelDetails = ({
           <span className="text-xs uppercase tracking-wide text-base-content/60">Shipment</span>
           <h2 className="text-2xl font-bold m-0 font-mono">{parcelId}</h2>
         </div>
-        {registered && <LedgerLink network={network} consensusTimestamp={registered.consensusTimestamp} />}
+        {parcel && registered && <LedgerLink network={network} consensusTimestamp={registered.consensusTimestamp} />}
       </div>
 
       <div className="rounded-box bg-base-200 p-4 flex flex-col gap-1">
-        <span className="text-xs uppercase tracking-wide text-base-content/60">Latest update</span>
-        <span className="text-lg font-semibold">{latestLabel}</span>
-        <span className="text-sm text-base-content/70">{formatConsensusTime(latest.consensusTimestamp)}</span>
+        <span className="text-xs uppercase tracking-wide text-base-content/60">Status</span>
+        <span className="text-2xl font-bold text-primary">{status}</span>
+        <span className="text-sm text-base-content/70">Since {formatConsensusTime(latest.consensusTimestamp)}</span>
       </div>
 
-      {parcel ? (
+      {parcel && (
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 m-0">
           <Detail label="From" value={parcel.origin} />
           <Detail label="To" value={parcel.destination} />
@@ -55,13 +55,6 @@ export const ParcelDetails = ({
           />
           <Detail label="Handled by" value={parcel.handler} />
         </dl>
-      ) : (
-        registered && (
-          <p className="m-0 text-sm text-base-content/70">
-            Registered {formatConsensusTime(registered.consensusTimestamp)}. Add your shipping documents below to see
-            the full shipment details.
-          </p>
-        )
       )}
     </section>
   );

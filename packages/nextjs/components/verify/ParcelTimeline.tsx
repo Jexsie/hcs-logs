@@ -3,34 +3,36 @@ import { HederaNetwork } from "~~/lib/network";
 import { AnchoredMessage } from "~~/lib/verify";
 import { asEvent, formatConsensusTime, formatEventType } from "~~/utils/recordDetails";
 
-// What a step is called: from the shipping document when the customer added it, otherwise only what is known for sure.
+// A step is named from its verified record. Without one, only the fact and time of the update are known.
 export const describeUpdate = (anchor: AnchoredMessage, record: unknown) => {
   if (anchor.kind === "parcel") {
-    return { title: "Shipment registered", detail: undefined };
+    return { title: "Registered", detail: undefined };
   }
   const event = asEvent(record);
-  return { title: event ? formatEventType(event.type) : "Shipment updated", detail: event?.location };
+  return { title: formatEventType(event?.type), detail: event?.location };
 };
 
 export const ParcelTimeline = ({
   network,
   anchors,
-  records,
+  details,
 }: {
   network: HederaNetwork;
   anchors: AnchoredMessage[];
-  records: Map<number, unknown>;
+  details: Map<number, unknown>;
 }) => (
   <section className="bg-base-100 rounded-2xl shadow-md p-6 sm:p-8 flex flex-col gap-4">
-    <h2 className="text-xl font-bold m-0">Shipment history</h2>
+    <h2 className="text-xl font-bold m-0">Timeline</h2>
     <ol className="list-none p-0 m-0 border-l-2 border-base-300 ml-2 flex flex-col gap-6">
-      {[...anchors].reverse().map((anchor, index) => {
-        const { title, detail } = describeUpdate(anchor, records.get(anchor.sequenceNumber));
+      {anchors.map((anchor, index) => {
+        const verified = details.has(anchor.sequenceNumber);
+        const { title, detail } = describeUpdate(anchor, details.get(anchor.sequenceNumber));
+        const current = index === anchors.length - 1;
         return (
           <li key={anchor.sequenceNumber} className="relative pl-6">
             <span
               className={`absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-base-100 ${
-                index === 0 ? "bg-primary" : "bg-base-300"
+                current ? "bg-primary" : "bg-success"
               }`}
             />
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -39,7 +41,11 @@ export const ParcelTimeline = ({
                 {detail && <span className="text-sm text-base-content/70">{detail}</span>}
                 <span className="text-sm text-base-content/60">{formatConsensusTime(anchor.consensusTimestamp)}</span>
               </div>
-              <LedgerLink network={network} consensusTimestamp={anchor.consensusTimestamp} />
+              {verified ? (
+                <LedgerLink network={network} consensusTimestamp={anchor.consensusTimestamp} />
+              ) : (
+                <span className="text-sm text-base-content/50">Details unavailable</span>
+              )}
             </div>
           </li>
         );

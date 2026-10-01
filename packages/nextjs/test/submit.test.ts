@@ -85,7 +85,7 @@ describe("anchorRecord", () => {
       serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
       dataDir,
     );
-    await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "picked-up")), dataDir);
+    await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "shipped")), dataDir);
     await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "delivered")), dataDir);
 
     expect(listRecordFiles(PARCEL_ID, dataDir)).toEqual(["event-0001.json", "event-0002.json", "parcel.json"]);
@@ -93,7 +93,7 @@ describe("anchorRecord", () => {
 
   it("refuses, without publishing, an event for an unregistered parcel or a second parcel record", async () => {
     const publish = vi.fn().mockResolvedValue("0.0.1001@1700000000.000000000");
-    const event = serializeRecord(generateEvent(PARCEL_ID, "picked-up"));
+    const event = serializeRecord(generateEvent(PARCEL_ID, "shipped"));
 
     await expect(anchorRecord(publish, PARCEL_ID, "event", event, dataDir)).rejects.toThrow("submit the parcel");
     await anchorRecord(

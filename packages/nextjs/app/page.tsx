@@ -64,7 +64,13 @@ const Verifier = ({ network, mirrorUrl, topicId }: { network: HederaNetwork; mir
       )}
 
       {state.status === "found" && state.anchors.length > 0 && (
-        <ParcelView key={state.parcelId} parcelId={state.parcelId} network={network} anchors={state.anchors} />
+        <ParcelView
+          parcelId={state.parcelId}
+          network={network}
+          anchors={state.anchors}
+          details={state.details}
+          changed={state.changed}
+        />
       )}
     </>
   );

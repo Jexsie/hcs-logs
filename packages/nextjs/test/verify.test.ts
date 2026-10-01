@@ -30,7 +30,7 @@ describe("verification", () => {
       serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
       dataDir,
     );
-    await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "picked-up")), dataDir);
+    await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "shipped")), dataDir);
     await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "delivered")), dataDir);
   });
 
@@ -46,7 +46,7 @@ describe("verification", () => {
 
   it("flips only the edited record to changed", async () => {
     const filePath = recordPath(PARCEL_ID, "event-0001.json", dataDir);
-    fs.writeFileSync(filePath, fs.readFileSync(filePath, "utf8").replace("Malaba border post", "Busia border post"));
+    fs.writeFileSync(filePath, fs.readFileSync(filePath, "utf8").replace("Kampala, UG", "Entebbe, UG"));
 
     const results = await compareRecords(PARCEL_ID, readRecords(PARCEL_ID, dataDir), published);
 

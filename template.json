@@ -138,7 +138,7 @@
             },
             {
               "label": "Anchor an event as a committee representative, fee-exempt",
-              "command": "{run:submit} -- event IND-2026-0041 --committee 2 --type picked-up"
+              "command": "{run:submit} -- event IND-2026-0041 --committee 2 --type customs"
             },
             {
               "label": "Verify the parcel against the mirror node",
