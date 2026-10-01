@@ -17,6 +17,7 @@
     "next:lint": "npm run lint -w @sh/nextjs --",
     "next:serve": "npm run serve -w @sh/nextjs --",
     "next:start": "npm run start -w @sh/nextjs --",
+    "prepare": "husky",
     "test": "npm run test -w @sh/nextjs --"
   },
   "devDependencies": {

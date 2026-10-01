@@ -1,4 +1,4 @@
-name: Lint
+name: CI
 
 on:
   push:
@@ -34,3 +34,9 @@ jobs:
 
       - name: Check typings on nextjs
         run: npm run next:check-types
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build nextjs
+        run: npm run next:build

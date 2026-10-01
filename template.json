@@ -1,0 +1,77 @@
+{
+  "name": "hcs-logs",
+  "description": "Tamper-evident cargo records anchored on a Hedera Consensus Service topic, with HIP-991 submission fees paid in an HTS token",
+  "version": "0.1.0",
+  "create-scaffold-hbar": {
+    "capabilities": {
+      "frontend": ["nextjs-app"],
+      "solidityFramework": ["none"],
+      "packageManager": ["yarn", "npm"]
+    },
+    "defaults": {
+      "packageManager": "npm",
+      "solidityFramework": "none"
+    },
+    "requirements": {
+      "node": "^24.21.0"
+    },
+    "envVars": [
+      { "key": "HEDERA_NETWORK", "description": "Network to use: testnet, mainnet or previewnet" },
+      {
+        "key": "OPERATOR_ID",
+        "description": "Association treasury account: pays for setup, holds the Freight supply, collects fees"
+      },
+      { "key": "OPERATOR_KEY", "description": "Treasury private key (DER, or 0x-prefixed ECDSA hex)" },
+      { "key": "INFRA_ACCOUNT_ID", "description": "Infrastructure operator account, the second fee collector" },
+      {
+        "key": "INFRA_ACCOUNT_KEY",
+        "description": "Infrastructure operator private key, used once to associate Freight"
+      },
+      {
+        "key": "COMMITTEE_KEYS",
+        "description": "The four committee representatives' private keys, comma-separated (local testing only)"
+      },
+      { "key": "COMMITTEE_THRESHOLD", "description": "Committee signatures required to change the fee (default 3)" },
+      { "key": "MEMBER_ID", "description": "Member company account that submits records and pays the fee" },
+      { "key": "MEMBER_KEY", "description": "Member company private key" },
+      { "key": "FREIGHT_TOKEN_ID", "description": "Freight token id, printed by token:create" },
+      { "key": "TOPIC_ID", "description": "Records topic id, printed by topic:create" },
+      { "key": "SUBMISSION_FEE", "description": "Fee per submission in Freight (default 1)" },
+      { "key": "MAX_CUSTOM_FEE", "description": "Most Freight a member will pay per submission (default 1)" },
+      { "key": "MIRROR_NODE_URL", "description": "Optional mirror node override; defaults to the public one" }
+    ],
+    "outro": {
+      "sections": [
+        {
+          "title": "Configure",
+          "steps": [
+            { "label": "Copy the environment file", "command": "cp .env.example .env" },
+            { "label": "Generate throwaway keys for local testing", "command": "{run:keys:generate}" },
+            { "label": "Get testnet HBAR for the treasury account", "url": "https://portal.hedera.com/faucet" }
+          ]
+        },
+        {
+          "title": "Set up the association",
+          "steps": [
+            {
+              "label": "Create the Freight token, then set FREIGHT_TOKEN_ID in .env",
+              "command": "{run:token:create}"
+            },
+            {
+              "label": "Create the records topic with HIP-991 fees, then set TOPIC_ID in .env",
+              "command": "{run:topic:create}"
+            }
+          ]
+        },
+        {
+          "title": "Anchor and verify",
+          "steps": [
+            { "label": "Submit a parcel record", "command": "{run:submit} -- parcel IND-2026-0041" },
+            { "label": "Verify the parcel against the mirror node", "command": "{run:verify} -- IND-2026-0041" },
+            { "text": "Edit any file under packages/nextjs/data/ and verify again: that record flips to changed." }
+          ]
+        }
+      ]
+    }
+  }
+}
