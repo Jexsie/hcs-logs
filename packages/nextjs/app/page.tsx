@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { NextPage } from "next";
-import { FileCheck } from "~~/components/verify/FileCheck";
-import { ParcelTrail } from "~~/components/verify/ParcelTrail";
+import { ParcelView } from "~~/components/verify/ParcelView";
 import { SearchForm } from "~~/components/verify/SearchForm";
 import { useParcelSearch } from "~~/hooks/useParcelSearch";
 import { HederaNetwork } from "~~/lib/network";
@@ -64,26 +63,17 @@ const Verifier = ({ network, mirrorUrl, topicId }: { network: HederaNetwork; mir
         </div>
       )}
 
-      {state.status === "found" && (
-        <>
-          <section className="bg-base-100 rounded-2xl shadow-md p-6 sm:p-8 flex flex-col gap-4">
-            <h2 className="text-xl font-bold m-0">Anchored records</h2>
-            <ParcelTrail parcelId={state.parcelId} topicId={topicId} network={network} anchors={state.anchors} />
-          </section>
+      {state.status === "found" && state.anchors.length === 0 && (
+        <div className="alert" role="status">
+          <span>
+            Nothing is anchored for <strong className="font-mono">{state.parcelId}</strong> on topic {topicId}. Check
+            the parcel ID, or try again in a few seconds if it was submitted just now.
+          </span>
+        </div>
+      )}
 
-          {state.anchors.length > 0 && (
-            <section className="bg-base-100 rounded-2xl shadow-md p-6 sm:p-8 flex flex-col gap-4">
-              <div>
-                <h2 className="text-xl font-bold m-0">Check your copies</h2>
-                <p className="m-0 mt-2 text-sm text-base-content/70">
-                  Have this parcel&apos;s record files? Check that they are exactly the files that were anchored. A
-                  single changed character makes a file fail.
-                </p>
-              </div>
-              <FileCheck key={state.parcelId} parcelId={state.parcelId} anchors={state.anchors} />
-            </section>
-          )}
-        </>
+      {state.status === "found" && state.anchors.length > 0 && (
+        <ParcelView key={state.parcelId} parcelId={state.parcelId} network={network} anchors={state.anchors} />
       )}
     </>
   );

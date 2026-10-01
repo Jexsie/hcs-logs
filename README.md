@@ -83,11 +83,15 @@ the others stay verified.
 `npm run next:dev` (or `next:build` then `next:start`) serves a public verifier at `/`. It needs no wallet, account or
 login, and has no server side of its own: the browser talks straight to the public mirror node.
 
-1. **Search** a parcel ID. The page lists every anchor for that parcel on the topic: parcel or event, the record's
-   SHA-256 fingerprint, when it reached consensus, and a HashScan link.
-2. **Check your copies.** Drop the parcel's JSON files onto the page. Each file is hashed in the browser with Web Crypto
-   and compared against those anchors. Files are never uploaded: the records hold business detail that is deliberately
-   kept off the ledger. A renamed file still verifies; a file changed by a single byte does not.
+1. **Search** a parcel ID. The page shows the parcel's timeline straight from the ledger: each record's kind and the
+   time it reached consensus, marked **Anchored** with a link to its HashScan transaction. The ledger holds only
+   fingerprints, so this is all anyone can see without the records.
+2. **Add the record files.** Drop the parcel's JSON files onto the page. Each file's raw bytes are hashed in the browser
+   with Web Crypto and matched against the anchors; only a file that matches is then read. Its details fill in the
+   parcel card (shipper, consignee, route, weight, handler) and its timeline step (for example "Picked up · Malaba
+   border post"), now marked **Verified** with the HashScan link. A file that does not match is reported and never
+   displayed, so unverified content never looks trustworthy. Files are never uploaded: the records hold business
+   detail that is deliberately kept off the ledger.
 
 Links such as `/?parcel=IND-2026-0041` open straight on a parcel, so a member can send a customer a verification link.
 

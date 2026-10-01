@@ -41,9 +41,10 @@ Do not break these:
   exempt key is 1-of-4.
 - **Balances come from the mirror node.** `AccountBalanceQuery` is deprecated.
 - **The page stays SDK-free and public.** `app/`, `components/` and `hooks/` may import only `lib/network`, `lib/mirror`,
-  `lib/verify`, `lib/hash` and `lib/types`. Never import `lib/client` or anything using the SDK, `fs` or a key there,
+  `lib/verify`, `lib/hash` and `lib/types`, plus type-only imports (`import type`) from other `lib/` files. Never import `lib/client` or anything using the SDK, `fs` or a key there,
   and never expose more than `HEDERA_NETWORK`, `MIRROR_NODE_URL` and `TOPIC_ID` through `next.config.ts`.
-- **Files dropped on the page never leave the browser.**
+- **Files dropped on the page never leave the browser,** and a file is read for display only after its raw bytes
+  matched an anchor.
 
 ## Style
 
