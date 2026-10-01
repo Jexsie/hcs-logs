@@ -4,29 +4,12 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "packages/hardhat",
       "packages/nextjs"
     ]
   },
   "scripts": {
-    "format": "npm run next:format -- && npm run hardhat:format --",
-    "hardhat:account": "npm run account -w @sh/hardhat --",
-    "hardhat:account:generate": "npm run account:generate -w @sh/hardhat --",
-    "hardhat:account:import": "npm run account:import -w @sh/hardhat --",
-    "hardhat:account:reveal-pk": "npm run account:reveal-pk -w @sh/hardhat --",
-    "hardhat:chain": "npm run chain -w @sh/hardhat --",
-    "hardhat:check-types": "npm run check-types -w @sh/hardhat --",
-    "hardhat:clean": "npm run clean -w @sh/hardhat --",
-    "hardhat:compile": "npm run compile -w @sh/hardhat --",
-    "hardhat:deploy": "npm run deploy -w @sh/hardhat --",
-    "hardhat:flatten": "npm run flatten -w @sh/hardhat --",
-    "hardhat:fork": "npm run fork -w @sh/hardhat --",
-    "hardhat:format": "npm run format -w @sh/hardhat --",
-    "hardhat:lint": "npm run lint -w @sh/hardhat --",
-    "hardhat:lint-staged": "npm run lint-staged -w @sh/hardhat --",
-    "hardhat:test": "npm run test -w @sh/hardhat --",
-    "hardhat:verify": "npm run verify:contract -w @sh/hardhat --",
-    "lint": "npm run next:lint -- && npm run hardhat:lint --",
+    "format": "npm run next:format --",
+    "lint": "npm run next:lint --",
     "next:build": "npm run build -w @sh/nextjs --",
     "next:check-types": "npm run check-types -w @sh/nextjs --",
     "next:dev": "npm run dev -w @sh/nextjs --",
@@ -41,6 +24,6 @@
     "lint-staged": "^15.2.10"
   },
   "engines": {
-    "node": ">=20.18.3"
+    "node": "^24.21.0"
   }
 }
