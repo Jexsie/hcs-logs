@@ -23,11 +23,12 @@ export const ParcelTimeline = ({
 }) => (
   <section className="bg-base-100 rounded-2xl shadow-md p-6 sm:p-8 flex flex-col gap-4">
     <h2 className="text-xl font-bold m-0">Timeline</h2>
+    {/* Newest first: the current status leads, the registration closes the list. */}
     <ol className="list-none p-0 m-0 border-l-2 border-base-300 ml-2 flex flex-col gap-6">
-      {anchors.map((anchor, index) => {
+      {[...anchors].reverse().map((anchor, index) => {
         const verified = details.has(anchor.sequenceNumber);
         const { title, detail } = describeUpdate(anchor, details.get(anchor.sequenceNumber));
-        const current = index === anchors.length - 1;
+        const current = index === 0;
         return (
           <li key={anchor.sequenceNumber} className="relative pl-6">
             <span
