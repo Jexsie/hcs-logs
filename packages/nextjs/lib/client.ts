@@ -1,4 +1,6 @@
-import { AccountId, Client, PrivateKey } from "@hiero-ledger/sdk";
+import { AccountId, Client, PrivateKey, Transaction } from "@hiero-ledger/sdk";
+import { config } from "dotenv";
+import * as path from "path";
 
 const MIRROR_URLS = {
   testnet: "https://testnet.mirrornode.hedera.com",
@@ -57,13 +59,28 @@ export const parsePrivateKey = (text: string, label: string) => {
   }
 };
 
-export const readOperator = (env: Env = process.env) => ({
-  accountId: parseAccountId(requireEnv(env, "OPERATOR_ID"), "OPERATOR_ID"),
-  privateKey: parsePrivateKey(requireEnv(env, "OPERATOR_KEY"), "OPERATOR_KEY"),
+// Scripts run from packages/nextjs, but the template keeps .env at the repository root.
+export const loadEnvFile = () => config({ path: path.resolve(__dirname, "../../../.env"), quiet: true });
+
+// Reads <PREFIX>_ID and <PREFIX>_KEY, e.g. OPERATOR_ID and OPERATOR_KEY.
+export const readAccount = (prefix: string, env: Env = process.env) => ({
+  accountId: parseAccountId(requireEnv(env, `${prefix}_ID`), `${prefix}_ID`),
+  privateKey: parsePrivateKey(requireEnv(env, `${prefix}_KEY`), `${prefix}_KEY`),
 });
+
+export const readOperator = (env: Env = process.env) => readAccount("OPERATOR", env);
 
 // The caller owns the client and must close it.
 export const createClient = (env: Env = process.env) => {
   const { accountId, privateKey } = readOperator(env);
   return Client.forName(readNetwork(env)).setOperator(accountId, privateKey);
+};
+
+export const executeTransaction = async (client: Client, transaction: Transaction, action: string) => {
+  try {
+    const response = await transaction.execute(client);
+    return await response.getReceipt(client);
+  } catch (error) {
+    throw new Error(`${action} failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };

@@ -22,9 +22,9 @@
         "description": "Association treasury account: pays for setup, holds the Freight supply, collects fees"
       },
       { "key": "OPERATOR_KEY", "description": "Treasury private key (DER, or 0x-prefixed ECDSA hex)" },
-      { "key": "INFRA_ACCOUNT_ID", "description": "Infrastructure operator account, the second fee collector" },
+      { "key": "INFRA_ID", "description": "Infrastructure operator account, the second fee collector" },
       {
-        "key": "INFRA_ACCOUNT_KEY",
+        "key": "INFRA_KEY",
         "description": "Infrastructure operator private key, used once to associate Freight"
       },
       {

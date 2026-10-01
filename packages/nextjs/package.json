@@ -10,7 +10,8 @@
     "lint": "next lint",
     "serve": "next start",
     "start": "next dev",
-    "test": "vitest run"
+    "test": "vitest run",
+    "token:create": "tsx scripts/createToken.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",

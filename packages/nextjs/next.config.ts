@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
   },
   eslint: {
-    dirs: ["app", "components", "hooks", "lib", "test", "utils"],
+    dirs: ["app", "components", "hooks", "lib", "scripts", "test", "utils"],
     ignoreDuringBuilds: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
   },
   webpack: (config, { dev }) => {
