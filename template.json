@@ -45,12 +45,28 @@
         "description": "Committee signatures required to change the fee (default 3)"
       },
       {
-        "key": "MEMBER_ID",
-        "description": "Member company account that submits records and pays the fee"
+        "key": "MEMBER_LAKESIDE_ID",
+        "description": "Lakeside Haulage, a member company that pays the fee"
       },
       {
-        "key": "MEMBER_KEY",
-        "description": "Member company private key"
+        "key": "MEMBER_LAKESIDE_KEY",
+        "description": "Lakeside Haulage private key"
+      },
+      {
+        "key": "MEMBER_NILE_ID",
+        "description": "Nile Cargo Services, a member company that pays the fee"
+      },
+      {
+        "key": "MEMBER_NILE_KEY",
+        "description": "Nile Cargo Services private key"
+      },
+      {
+        "key": "MEMBER_RIFT_ID",
+        "description": "Rift Valley Logistics, a member company that pays the fee"
+      },
+      {
+        "key": "MEMBER_RIFT_KEY",
+        "description": "Rift Valley Logistics private key"
       },
       {
         "key": "FREIGHT_TOKEN_ID",
@@ -91,7 +107,7 @@
               "url": "https://portal.hedera.com/faucet"
             },
             {
-              "label": "Generate throwaway committee, infrastructure and member keys and accounts",
+              "label": "Generate throwaway committee, infrastructure and member company keys and accounts",
               "command": "{run:keys:generate} -- --create-accounts"
             }
           ]
@@ -117,8 +133,12 @@
           "title": "Anchor and verify",
           "steps": [
             {
-              "label": "Submit a parcel record",
-              "command": "{run:submit} -- parcel IND-2026-0041"
+              "label": "Anchor a parcel as a member company",
+              "command": "{run:submit} -- parcel IND-2026-0041 --member lakeside"
+            },
+            {
+              "label": "Anchor an event as a committee representative, fee-exempt",
+              "command": "{run:submit} -- event IND-2026-0041 --committee 2 --type picked-up"
             },
             {
               "label": "Verify the parcel against the mirror node",

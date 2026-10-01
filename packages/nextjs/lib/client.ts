@@ -88,6 +88,27 @@ export const readAccount = (prefix: string, env: Env = process.env) => ({
 
 export const readOperator = (env: Env = process.env) => readAccount("OPERATOR", env);
 
+// The association's member companies in this demo. Each reads MEMBER_<SLUG>_ID and MEMBER_<SLUG>_KEY.
+export const MEMBERS = {
+  lakeside: "Lakeside Haulage",
+  nile: "Nile Cargo Services",
+  rift: "Rift Valley Logistics",
+};
+
+export type MemberSlug = keyof typeof MEMBERS;
+
+export const MEMBER_SLUGS = Object.keys(MEMBERS) as MemberSlug[];
+
+export const isMemberSlug = (value: string): value is MemberSlug => Object.hasOwn(MEMBERS, value);
+
+export const memberPrefix = (slug: MemberSlug) => `MEMBER_${slug.toUpperCase()}`;
+
+export const readMember = (slug: MemberSlug, env: Env = process.env) => ({
+  slug,
+  name: MEMBERS[slug],
+  ...readAccount(memberPrefix(slug), env),
+});
+
 const readAccountId = (name: string, env: Env = process.env) => parseAccountId(requireEnv(env, name), name);
 
 export const parseWholeNumber = (text: string, label: string) => {
@@ -156,12 +177,22 @@ export const readCommitteeThreshold = (env: Env = process.env) => {
 export const createClient = (account = readOperator(), network = readNetwork()) =>
   Client.forName(network).setOperator(account.accountId, account.privateKey);
 
+// Adds each signature to a frozen transaction, e.g. a threshold of committee keys.
+export const signWith = async <T extends Transaction>(transaction: T, signers: PrivateKey[]) => {
+  for (const signer of signers) {
+    await transaction.sign(signer);
+  }
+  return transaction;
+};
+
+// Waits for consensus and returns the receipt with the transaction id, so callers can point at it on HashScan.
 export const executeTransaction = async (client: Client, transaction: Transaction, action: string) => {
   try {
     const response = await transaction.execute(client);
-    return await response.getReceipt(client);
+    return { receipt: await response.getReceipt(client), transactionId: response.transactionId.toString() };
   } catch (error) {
-    throw new Error(`${action} failed: ${error instanceof Error ? error.message : String(error)}`);
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`${action} failed (transaction ${transaction.transactionId ?? "not frozen"}): ${reason}`);
   }
 };
 
@@ -170,7 +201,7 @@ export const createAccount = async (client: Client, key: PrivateKey, initialHbar
   const transaction = new AccountCreateTransaction()
     .setKeyWithoutAlias(key.publicKey)
     .setInitialBalance(new Hbar(initialHbar));
-  const { accountId } = await executeTransaction(client, transaction, "Creating an account");
+  const { accountId } = (await executeTransaction(client, transaction, "Creating an account")).receipt;
   if (!accountId) {
     throw new Error("Creating an account returned no account id");
   }

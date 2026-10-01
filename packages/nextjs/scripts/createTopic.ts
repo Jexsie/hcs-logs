@@ -3,14 +3,17 @@ import { checkTopicConfig, createRecordsTopic } from "~~/lib/topic";
 
 async function main() {
   loadEnvFile();
-  const committee = readCommitteeKeys().map(key => key.publicKey);
+  const committeeKeys = readCommitteeKeys();
+  const committee = committeeKeys.map(key => key.publicKey);
   const threshold = readCommitteeThreshold();
   const fees = readFeeSchedule();
   const client = createClient();
 
   try {
-    const topicId = await createRecordsTopic(client, committee, threshold, fees);
-    console.log(`📮 Records topic created: ${topicId}\n`);
+    // Locally every committee key is at hand; in production the representatives sign the creation in turn.
+    const signers = committeeKeys.slice(0, threshold);
+    const { topicId, transactionId } = await createRecordsTopic(client, committee, threshold, fees, signers);
+    console.log(`📮 Records topic created: ${topicId} (${transactionId})\n`);
 
     const checks = await checkTopicConfig(client, topicId, committee, threshold, fees);
     checks.forEach(({ setting, ok }) => console.log(`${ok ? "✅" : "❌"} ${setting}`));

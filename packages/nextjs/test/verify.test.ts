@@ -17,8 +17,15 @@ describe("compareRecords", () => {
     published = [];
     const publish = vi.fn(async (message: string) => {
       published.push({ ...JSON.parse(message), consensusTimestamp: `1700000000.${published.length}` });
+      return `0.0.1001@1700000000.${published.length}`;
     });
-    await anchorRecord(publish, PARCEL_ID, "parcel", serializeRecord(generateParcel(PARCEL_ID)), dataDir);
+    await anchorRecord(
+      publish,
+      PARCEL_ID,
+      "parcel",
+      serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
+      dataDir,
+    );
     await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "picked-up")), dataDir);
     await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "delivered")), dataDir);
   });

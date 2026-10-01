@@ -21,7 +21,7 @@ describe("anchorRecord", () => {
 
   it("writes no file when the submission fails", async () => {
     const publish = vi.fn().mockRejectedValue(new Error("MAX_CUSTOM_FEE_LIMIT_EXCEEDED"));
-    const bytes = serializeRecord(generateParcel(PARCEL_ID));
+    const bytes = serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage"));
 
     await expect(anchorRecord(publish, PARCEL_ID, "parcel", bytes, dataDir)).rejects.toThrow(
       "MAX_CUSTOM_FEE_LIMIT_EXCEEDED",
@@ -31,8 +31,14 @@ describe("anchorRecord", () => {
   });
 
   it("puts only v, parcelId, kind and hash in the message", async () => {
-    const publish = vi.fn().mockResolvedValue(undefined);
-    await anchorRecord(publish, PARCEL_ID, "parcel", serializeRecord(generateParcel(PARCEL_ID)), dataDir);
+    const publish = vi.fn().mockResolvedValue("0.0.1001@1700000000.000000000");
+    await anchorRecord(
+      publish,
+      PARCEL_ID,
+      "parcel",
+      serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
+      dataDir,
+    );
 
     const message = JSON.parse(publish.mock.calls[0][0]);
 
@@ -41,8 +47,8 @@ describe("anchorRecord", () => {
   });
 
   it("anchors the hash of exactly the bytes it writes to disk", async () => {
-    const publish = vi.fn().mockResolvedValue(undefined);
-    const bytes = serializeRecord(generateParcel(PARCEL_ID));
+    const publish = vi.fn().mockResolvedValue("0.0.1001@1700000000.000000000");
+    const bytes = serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage"));
 
     const { anchor, filePath } = await anchorRecord(publish, PARCEL_ID, "parcel", bytes, dataDir);
     const written = fs.readFileSync(filePath);
@@ -56,16 +62,29 @@ describe("anchorRecord", () => {
     const order: string[] = [];
     const publish = vi.fn(async () => {
       order.push(fs.existsSync(path.join(dataDir, PARCEL_ID, "parcel.json")) ? "file existed" : "published");
+      return "0.0.1001@1700000000.000000000";
     });
 
-    await anchorRecord(publish, PARCEL_ID, "parcel", serializeRecord(generateParcel(PARCEL_ID)), dataDir);
+    await anchorRecord(
+      publish,
+      PARCEL_ID,
+      "parcel",
+      serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
+      dataDir,
+    );
 
     expect(order).toEqual(["published"]);
   });
 
   it("numbers events in submission order", async () => {
-    const publish = vi.fn().mockResolvedValue(undefined);
-    await anchorRecord(publish, PARCEL_ID, "parcel", serializeRecord(generateParcel(PARCEL_ID)), dataDir);
+    const publish = vi.fn().mockResolvedValue("0.0.1001@1700000000.000000000");
+    await anchorRecord(
+      publish,
+      PARCEL_ID,
+      "parcel",
+      serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
+      dataDir,
+    );
     await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "picked-up")), dataDir);
     await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "delivered")), dataDir);
 
@@ -73,13 +92,25 @@ describe("anchorRecord", () => {
   });
 
   it("refuses, without publishing, an event for an unregistered parcel or a second parcel record", async () => {
-    const publish = vi.fn().mockResolvedValue(undefined);
+    const publish = vi.fn().mockResolvedValue("0.0.1001@1700000000.000000000");
     const event = serializeRecord(generateEvent(PARCEL_ID, "picked-up"));
 
     await expect(anchorRecord(publish, PARCEL_ID, "event", event, dataDir)).rejects.toThrow("submit the parcel");
-    await anchorRecord(publish, PARCEL_ID, "parcel", serializeRecord(generateParcel(PARCEL_ID)), dataDir);
+    await anchorRecord(
+      publish,
+      PARCEL_ID,
+      "parcel",
+      serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
+      dataDir,
+    );
     await expect(
-      anchorRecord(publish, PARCEL_ID, "parcel", serializeRecord(generateParcel(PARCEL_ID)), dataDir),
+      anchorRecord(
+        publish,
+        PARCEL_ID,
+        "parcel",
+        serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
+        dataDir,
+      ),
     ).rejects.toThrow("already exists");
     expect(publish).toHaveBeenCalledOnce();
   });

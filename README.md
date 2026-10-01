@@ -8,7 +8,8 @@ A Scaffold-HBAR template for tamper-evident records on the Hedera Consensus Serv
 The Indiana Group is a cargo handlers' association. Member companies keep their own parcel and event records as JSON
 files on their own machines, but every record is first anchored on a shared HCS topic.
 
-- **Members pay to anchor.** Each submission costs a fee in the association's HTS token, **Freight**.
+- **Members pay to anchor.** Each submission costs a fee in the association's HTS token, **Freight**. The demo has
+  three member companies: Lakeside Haulage, Nile Cargo Services and Rift Valley Logistics.
 - **The committee anchors for free.** The four committee representatives are fee-exempt.
 - **Anyone verifies for free.** Verification reads only local files and the public mirror node.
 
@@ -23,6 +24,7 @@ association and holds a seat on the committee.
 | Multiple fee collectors      | Each submission pays the association treasury (`TREASURY_FEE`) and the infrastructure operator (`INFRA_FEE`). |
 | Fee-exempt key list          | Holds the committee as one 1-of-4 threshold key, so any single representative submits without paying.      |
 | Fee schedule key             | A 3-of-4 committee threshold key. One representative acting alone is rejected with `INVALID_SIGNATURE`.     |
+| Admin key                    | The same 3-of-4 committee key, so only the committee acting together can reconfigure or delete the topic.  |
 | `max_custom_fee`             | Set on every submission. If the fee rose above it, the network fails the message with `MAX_CUSTOM_FEE_LIMIT_EXCEEDED`. |
 
 Two details from the HIP shape the keys:
@@ -30,8 +32,25 @@ Two details from the HIP shape the keys:
 - **Exempt keys must have their threshold met.** HIP-991 exempts a message only when an exempt key's threshold is
   satisfied. A 3-of-4 key in the exempt list would therefore charge a lone representative. The exempt key is 1-of-4,
   and the fee schedule key is the one that needs three signatures.
-- **The topic has no admin key.** Its collectors and exempt list are fixed at creation, and only the committee can
-  change fees. Nobody can route around the committee by updating the topic another way.
+- **The committee holds the admin key.** See below.
+
+## Governance: who can change the topic
+
+The topic's admin key and fee schedule key are both a 3-of-4 threshold of the committee's keys. Concretely:
+
+- **Changing fees** needs three representatives' signatures. One representative or the treasury alone is rejected.
+- **Changing anything else** also needs three representatives. That covers the memo, the exempt list (for example to
+  add a fifth representative), the admin and fee schedule keys themselves (to rotate the committee), and the
+  collectors' fees.
+- **Deleting the topic** also needs three representatives. The committee can do it; nobody else can. A deleted topic
+  accepts no new anchors. Whether a mirror node keeps serving a deleted topic's past messages, and so whether existing
+  records stay verifiable, depends on that mirror node; this template does not test it.
+- **Creating the topic** is signed by three representatives as well, because the network requires the admin key to
+  sign. In production that is a signing ceremony; locally all four keys sit in one `.env`.
+
+So this topic is **not permanent and not immutable.** It is exactly as durable as the committee's willingness to keep
+it, and the network enforces that no smaller group can change it. A template that wanted the opposite guarantee would
+omit the admin key, at the cost of never being able to rotate the committee or delete the topic.
 
 ## The record model
 
@@ -73,9 +92,9 @@ cp .env.example .env               # put the treasury account in OPERATOR_ID and
 npm run keys:generate -- --create-accounts   # paste the output into .env
 npm run token:create               # then set FREIGHT_TOKEN_ID in .env
 npm run topic:create               # then set TOPIC_ID in .env
-npm run submit -- parcel IND-2026-0041
-npm run submit -- event IND-2026-0041 --type picked-up
-npm run submit -- event IND-2026-0041 --type at-hub --committee 2
+npm run submit -- parcel IND-2026-0041 --member lakeside
+npm run submit -- event IND-2026-0041 --member nile --type picked-up
+npm run submit -- event IND-2026-0041 --committee 2 --type at-hub
 npm run verify -- IND-2026-0041
 ```
 
@@ -86,11 +105,11 @@ record as changed.
 
 | Script                                   | What it does                                                                                    |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `keys:generate [-- --create-accounts]`   | Prints throwaway committee, infrastructure and member keys. With the flag, the operator creates the two accounts. |
-| `token:create`                           | Creates Freight with the treasury as operator, associates both accounts, and sells the member 100 Freight. |
+| `keys:generate [-- --create-accounts]`   | Prints throwaway committee, infrastructure and member company keys. With the flag, the operator creates the infrastructure and three member accounts. |
+| `token:create`                           | Creates Freight with the treasury as operator, associates the infrastructure account and all three members, and sells each member 100 Freight. |
 | `topic:create`                           | Creates the topic with every HIP-991 setting, then reads it back and checks each one on-chain.  |
 | `fee:update -- <treasury> <infra> [--signers n]` | Changes the fee, signed by `n` committee keys (default: the threshold).                |
-| `submit -- <parcel\|event> <parcelId> [--type t] [--committee n]` | Anchors a record, then writes it. `--committee n` submits as representative `n`, fee-exempt. |
+| `submit -- <parcel\|event> <parcelId> (--member m \| --committee n) [--type t]` | Anchors a record, then writes it. `--member lakeside\|nile\|rift` pays the fee; `--committee n` submits as representative `n`, fee-exempt. |
 | `verify -- <parcelId>`                   | Verifies each of a parcel's records against the mirror node. Exits non-zero if any changed.    |
 | `test`                                   | Unit tests. No network needed.                                                                  |
 | `test:network`                           | On-network HIP-991 tests. Builds a fresh token and topic and spends testnet HBAR.               |
@@ -104,7 +123,7 @@ packages/nextjs/
     client.ts   network, operator and committee config, client construction, transaction execution
     hash.ts     SHA-256 over raw bytes
     store.ts    reading and writing record files under data/
-    token.ts    Freight creation, minting, association and transfer
+    token.ts    Freight creation, association and transfer
     topic.ts    the HIP-991 topic, fee updates and the on-chain configuration check
     submit.ts   record generation and ledger-first submission with max_custom_fee
     mirror.ts   mirror node reads for topic messages and token balances
@@ -119,6 +138,8 @@ packages/nextjs/
 - **A hash proves a file existed, not who wrote it.** Anyone who pays the fee can post an anchor to this public topic.
   Verify reports when each matching anchor reached consensus. An anchor much later than the original points to a file
   that was edited and then re-anchored.
+- **Freight is never minted after creation.** The treasury keeps the supply key, so the association can issue more
+  later, but the 1,000,000 created up front is far more than the demo sells, so the template ships no mint path.
 - **Committee keys sit in one `.env` locally.** That is fine for testing; in production each representative holds
   only their own key.
 

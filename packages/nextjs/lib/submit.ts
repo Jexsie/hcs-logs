@@ -7,21 +7,22 @@ import {
   TopicId,
   TopicMessageSubmitTransaction,
 } from "@hiero-ledger/sdk";
-import { executeTransaction } from "~~/lib/client";
+import { executeTransaction, signWith } from "~~/lib/client";
 import { hashBytes } from "~~/lib/hash";
 import { PARCEL_FILE, nextEventFileName, recordExists, writeRecord } from "~~/lib/store";
 import { Anchor } from "~~/lib/types";
 
-// Sends one anchor message and resolves once it has reached consensus.
-type Publish = (message: string) => Promise<void>;
+// Sends one anchor message, resolving with its transaction id once it has reached consensus.
+type Publish = (message: string) => Promise<string>;
 
 export const EVENT_TYPES = ["picked-up", "in-transit", "at-hub", "out-for-delivery", "delivered"] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
 
-export const generateParcel = (parcelId: string, now = new Date()) => ({
+export const generateParcel = (parcelId: string, handler: string, now = new Date()) => ({
   parcelId,
   kind: "parcel",
+  handler,
   shipper: "Lakeside Exporters Ltd",
   consignee: "Indiana Group Member Depot",
   origin: "Kampala, UG",
@@ -74,9 +75,9 @@ export const anchorRecord = async (
     throw new Error(`Record ${parcelId}/${fileName} already exists; a parcel is registered once`);
   }
   const anchor = buildAnchor(parcelId, kind, bytes);
-  await publish(JSON.stringify(anchor));
+  const transactionId = await publish(JSON.stringify(anchor));
   const filePath = writeRecord(parcelId, fileName, bytes, dataDir);
-  return { anchor, filePath };
+  return { anchor, filePath, transactionId };
 };
 
 // max_custom_fee: the submission fails rather than charge more than maxFee Freight, even if the committee raised the
@@ -96,8 +97,7 @@ export const publishToTopic =
       .setMessage(message)
       .setCustomFeeLimits([limit])
       .freezeWith(client);
-    for (const signer of signers) {
-      await transaction.sign(signer);
-    }
-    await executeTransaction(client, transaction, `Anchoring on topic ${topicId}`);
+    await signWith(transaction, signers);
+    const { transactionId } = await executeTransaction(client, transaction, `Anchoring on topic ${topicId}`);
+    return transactionId;
   };

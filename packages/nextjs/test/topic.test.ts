@@ -1,6 +1,6 @@
 import { AccountId, KeyList, PrivateKey, TokenId } from "@hiero-ledger/sdk";
 import { describe, expect, it } from "vitest";
-import { buildCustomFees, feeExemptKey, feeScheduleKey } from "~~/lib/topic";
+import { buildCustomFees, committeeKey, feeExemptKey } from "~~/lib/topic";
 
 const committee = Array.from({ length: 4 }, () => PrivateKey.generateED25519().publicKey);
 
@@ -24,8 +24,8 @@ describe("topic configuration", () => {
     expect(infra.amount?.toNumber()).toBe(1);
   });
 
-  it("makes the fee schedule key a threshold of the whole committee", () => {
-    const key = feeScheduleKey(committee, 3);
+  it("makes the admin and fee schedule key a threshold of the whole committee", () => {
+    const key = committeeKey(committee, 3);
 
     expect(key).toBeInstanceOf(KeyList);
     expect(key.threshold).toBe(3);

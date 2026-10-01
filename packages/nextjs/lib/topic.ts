@@ -12,7 +12,7 @@ import {
   TopicInfoQuery,
   TopicUpdateTransaction,
 } from "@hiero-ledger/sdk";
-import { executeTransaction } from "~~/lib/client";
+import { executeTransaction, signWith } from "~~/lib/client";
 
 // What a member pays per submission: one Freight-denominated fee to each collector.
 type FeeSchedule = {
@@ -33,42 +33,51 @@ export const buildCustomFees = ({ tokenId, treasuryId, treasuryFee, infraId, inf
   freightFee(tokenId, infraId, infraFee),
 ];
 
-// Changing the fee needs `threshold` of the representatives; one acting alone is rejected by the network.
-export const feeScheduleKey = (committee: PublicKey[], threshold: number) => new KeyList(committee, threshold);
+// The topic's admin key and fee schedule key. Either kind of change needs `threshold` of the representatives, so one
+// representative, or the treasury, acting alone is rejected by the network.
+export const committeeKey = (committee: PublicKey[], threshold: number) => new KeyList(committee, threshold);
 
 // HIP-991 exempts a message only when an exempt key's threshold is met. A 1-of-4 threshold lets any single
 // representative submit for free, while the list still holds the committee as one key.
 export const feeExemptKey = (committee: PublicKey[]) => new KeyList(committee, 1);
 
-// No admin key: the topic's keys and collectors are fixed at creation, and only the committee can change fees.
+// The network requires the admin key to sign the creation, so a threshold of the committee signs it.
 export const createRecordsTopic = async (
   client: Client,
   committee: PublicKey[],
   threshold: number,
   fees: FeeSchedule,
+  signers: PrivateKey[],
 ) => {
   const transaction = new TopicCreateTransaction()
     .setTopicMemo(TOPIC_MEMO)
-    .setFeeScheduleKey(feeScheduleKey(committee, threshold))
+    .setAdminKey(committeeKey(committee, threshold))
+    .setFeeScheduleKey(committeeKey(committee, threshold))
     .setFeeExemptKeys([feeExemptKey(committee)])
-    .setCustomFees(buildCustomFees(fees));
-  const { topicId } = await executeTransaction(client, transaction, "Creating the records topic");
-  if (!topicId) {
+    .setCustomFees(buildCustomFees(fees))
+    .freezeWith(client);
+  await signWith(transaction, signers);
+  const { receipt, transactionId } = await executeTransaction(client, transaction, "Creating the records topic");
+  if (!receipt.topicId) {
     throw new Error("Creating the records topic returned no topic id");
   }
-  return topicId;
+  return { topicId: receipt.topicId, transactionId };
 };
 
+// A fees-only update needs just the fee schedule key; setting any other field would also need the admin key.
 export const updateFees = async (client: Client, topicId: TopicId, fees: FeeSchedule, signers: PrivateKey[]) => {
   const transaction = new TopicUpdateTransaction()
     .setTopicId(topicId)
     .setCustomFees(buildCustomFees(fees))
     .freezeWith(client);
-  for (const signer of signers) {
-    await transaction.sign(signer);
-  }
+  await signWith(transaction, signers);
   const signed = `${signers.length} committee signature${signers.length === 1 ? "" : "s"}`;
-  await executeTransaction(client, transaction, `Updating the fees on ${topicId} with ${signed}`);
+  const { transactionId } = await executeTransaction(
+    client,
+    transaction,
+    `Updating the fees on ${topicId} with ${signed}`,
+  );
+  return transactionId;
 };
 
 export const getTopicInfo = (client: Client, topicId: TopicId) =>
@@ -95,6 +104,7 @@ export const checkTopicConfig = async (
   const info = await getTopicInfo(client, topicId);
   const customFees = info.customFees ?? [];
   const [treasuryFee, infraFee] = buildCustomFees(fees);
+  const governance = committeeKey(committee, threshold);
 
   return [
     {
@@ -104,10 +114,7 @@ export const checkTopicConfig = async (
     { setting: `Fee of ${fees.infraFee} Freight to infrastructure ${fees.infraId}`, ok: hasFee(customFees, infraFee) },
     { setting: "Exactly two fee collectors", ok: customFees.length === 2 },
     { setting: "Committee 1-of-4 key is fee-exempt", ok: sameKey(info.feeExemptKeys?.[0], feeExemptKey(committee)) },
-    {
-      setting: `Fee schedule key is a ${threshold}-of-4 committee key`,
-      ok: sameKey(info.feeScheduleKey, feeScheduleKey(committee, threshold)),
-    },
-    { setting: "No admin key", ok: info.adminKey === null },
+    { setting: `Fee schedule key is a ${threshold}-of-4 committee key`, ok: sameKey(info.feeScheduleKey, governance) },
+    { setting: `Admin key is a ${threshold}-of-4 committee key`, ok: sameKey(info.adminKey, governance) },
   ];
 };

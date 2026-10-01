@@ -36,7 +36,8 @@ Do not break these:
 - **Ledger first.** Only `anchorRecord` writes a record, and only after the anchor reached consensus.
 - **Four-field envelope.** The topic message is exactly `{ v, parcelId, kind, hash }`.
 - **`max_custom_fee` on every submission.** It is set in `publishToTopic`.
-- **The topic has no admin key.** The fee schedule key is a committee threshold key, and the exempt key is 1-of-4.
+- **The committee governs the topic.** The admin and fee schedule keys are the same 3-of-4 committee key, and the
+  exempt key is 1-of-4.
 - **Balances come from the mirror node.** `AccountBalanceQuery` is deprecated.
 
 ## Style

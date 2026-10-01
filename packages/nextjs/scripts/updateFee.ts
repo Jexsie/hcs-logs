@@ -30,8 +30,9 @@ async function main() {
   const client = createClient();
 
   try {
-    await updateFees(client, topicId, fees, committee.slice(0, signerCount));
+    const transactionId = await updateFees(client, topicId, fees, committee.slice(0, signerCount));
     console.log(`💸 Fees on ${topicId} are now ${fees.treasuryFee} + ${fees.infraFee} Freight per submission`);
+    console.log(`   signed by ${signerCount} committee keys (${transactionId})`);
   } finally {
     client.close();
   }
