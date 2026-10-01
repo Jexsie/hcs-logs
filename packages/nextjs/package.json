@@ -6,12 +6,14 @@
     "build": "next build",
     "check-types": "tsc --noEmit --incremental",
     "dev": "next dev",
+    "fee:update": "tsx scripts/updateFee.ts",
     "format": "prettier --write . '!(node_modules|.next|contracts)/**/*'",
     "lint": "next lint",
     "serve": "next start",
     "start": "next dev",
     "test": "vitest run",
-    "token:create": "tsx scripts/createToken.ts"
+    "token:create": "tsx scripts/createToken.ts",
+    "topic:create": "tsx scripts/createTopic.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",

@@ -1,4 +1,4 @@
-import { AccountId, Client, PrivateKey, Transaction } from "@hiero-ledger/sdk";
+import { AccountId, Client, PrivateKey, TokenId, TopicId, Transaction } from "@hiero-ledger/sdk";
 import { config } from "dotenv";
 import * as path from "path";
 
@@ -69,6 +69,70 @@ export const readAccount = (prefix: string, env: Env = process.env) => ({
 });
 
 export const readOperator = (env: Env = process.env) => readAccount("OPERATOR", env);
+
+export const readAccountId = (name: string, env: Env = process.env) => parseAccountId(requireEnv(env, name), name);
+
+export const parseWholeNumber = (text: string, label: string) => {
+  const value = Number(text);
+  if (!text || !Number.isInteger(value) || value < 0) {
+    throw new Error(`${label} must be a whole number, got "${text}"`);
+  }
+  return value;
+};
+
+export const readWholeNumber = (name: string, fallback: number, env: Env = process.env) => {
+  const text = readEnv(env, name);
+  return text === undefined ? fallback : parseWholeNumber(text, name);
+};
+
+export const readTokenId = (env: Env = process.env) => {
+  const text = requireEnv(env, "FREIGHT_TOKEN_ID");
+  try {
+    return TokenId.fromString(text);
+  } catch {
+    throw new Error(`FREIGHT_TOKEN_ID is not a valid token id: "${text}"`);
+  }
+};
+
+export const readTopicId = (env: Env = process.env) => {
+  const text = requireEnv(env, "TOPIC_ID");
+  try {
+    return TopicId.fromString(text);
+  } catch {
+    throw new Error(`TOPIC_ID is not a valid topic id: "${text}"`);
+  }
+};
+
+// The treasury is the operator; each collector's share comes from TREASURY_FEE and INFRA_FEE.
+export const readFeeSchedule = (env: Env = process.env) => ({
+  tokenId: readTokenId(env),
+  treasuryId: readAccountId("OPERATOR_ID", env),
+  treasuryFee: readWholeNumber("TREASURY_FEE", 2, env),
+  infraId: readAccountId("INFRA_ID", env),
+  infraFee: readWholeNumber("INFRA_FEE", 1, env),
+});
+
+const COMMITTEE_SIZE = 4;
+
+// Locally all four keys sit in one .env for testing. In production each representative holds only their own.
+export const readCommitteeKeys = (env: Env = process.env) => {
+  const keys = requireEnv(env, "COMMITTEE_KEYS")
+    .split(",")
+    .map((text, index) => parsePrivateKey(text.trim(), `COMMITTEE_KEYS entry ${index + 1}`));
+  if (keys.length !== COMMITTEE_SIZE) {
+    throw new Error(`COMMITTEE_KEYS must hold ${COMMITTEE_SIZE} comma-separated keys, got ${keys.length}`);
+  }
+  return keys;
+};
+
+// A threshold of 1 would let one representative change the fee alone, which is exactly what the committee prevents.
+export const readCommitteeThreshold = (env: Env = process.env) => {
+  const threshold = readWholeNumber("COMMITTEE_THRESHOLD", 3, env);
+  if (threshold < 2 || threshold > COMMITTEE_SIZE) {
+    throw new Error(`COMMITTEE_THRESHOLD must be between 2 and ${COMMITTEE_SIZE}, got ${threshold}`);
+  }
+  return threshold;
+};
 
 // The caller owns the client and must close it.
 export const createClient = (env: Env = process.env) => {
