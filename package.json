@@ -19,6 +19,7 @@
     "next:serve": "npm run serve -w @sh/nextjs --",
     "next:start": "npm run start -w @sh/nextjs --",
     "prepare": "husky",
+    "submit": "npm run submit -w @sh/nextjs --",
     "test": "npm run test -w @sh/nextjs --",
     "token:create": "npm run token:create -w @sh/nextjs --",
     "topic:create": "npm run topic:create -w @sh/nextjs --"

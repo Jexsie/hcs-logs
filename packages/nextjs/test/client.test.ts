@@ -64,13 +64,9 @@ describe("client", () => {
     expect(message).not.toContain(secret);
   });
 
-  it("builds a client for the configured network with the operator set", () => {
+  it("builds a client for a network with the given account as operator", () => {
     const key = PrivateKey.generateECDSA();
-    const client = createClient({
-      HEDERA_NETWORK: "testnet",
-      OPERATOR_ID: "0.0.1234",
-      OPERATOR_KEY: key.toStringDer(),
-    });
+    const client = createClient(readOperator({ OPERATOR_ID: "0.0.1234", OPERATOR_KEY: key.toStringDer() }), "testnet");
 
     expect(client.operatorAccountId?.toString()).toBe("0.0.1234");
     expect(client.operatorPublicKey?.toStringDer()).toBe(key.publicKey.toStringDer());

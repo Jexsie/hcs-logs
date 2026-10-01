@@ -134,11 +134,9 @@ export const readCommitteeThreshold = (env: Env = process.env) => {
   return threshold;
 };
 
-// The caller owns the client and must close it.
-export const createClient = (env: Env = process.env) => {
-  const { accountId, privateKey } = readOperator(env);
-  return Client.forName(readNetwork(env)).setOperator(accountId, privateKey);
-};
+// The caller owns the client and must close it. The account pays for, and signs, every transaction it executes.
+export const createClient = (account = readOperator(), network = readNetwork()) =>
+  Client.forName(network).setOperator(account.accountId, account.privateKey);
 
 export const executeTransaction = async (client: Client, transaction: Transaction, action: string) => {
   try {
