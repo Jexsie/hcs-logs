@@ -10,6 +10,7 @@
   "scripts": {
     "fee:update": "npm run fee:update -w @sh/nextjs --",
     "format": "npm run next:format --",
+    "keys:generate": "npm run keys:generate -w @sh/nextjs --",
     "lint": "npm run next:lint --",
     "next:build": "npm run build -w @sh/nextjs --",
     "next:check-types": "npm run check-types -w @sh/nextjs --",
@@ -21,6 +22,7 @@
     "prepare": "husky",
     "submit": "npm run submit -w @sh/nextjs --",
     "test": "npm run test -w @sh/nextjs --",
+    "test:network": "npm run test:network -w @sh/nextjs --",
     "token:create": "npm run token:create -w @sh/nextjs --",
     "topic:create": "npm run topic:create -w @sh/nextjs --",
     "verify": "npm run verify -w @sh/nextjs --"

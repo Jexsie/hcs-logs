@@ -8,11 +8,13 @@
     "dev": "next dev",
     "fee:update": "tsx scripts/updateFee.ts",
     "format": "prettier --write . '!(node_modules|.next|contracts)/**/*'",
+    "keys:generate": "tsx scripts/generateKeys.ts",
     "lint": "next lint",
     "serve": "next start",
     "start": "next dev",
     "submit": "tsx scripts/submitRecord.ts",
     "test": "vitest run",
+    "test:network": "HCS_LOGS_NETWORK_TESTS=1 vitest run test/network.test.ts",
     "token:create": "tsx scripts/createToken.ts",
     "topic:create": "tsx scripts/createTopic.ts",
     "verify": "tsx scripts/verifyParcel.ts"

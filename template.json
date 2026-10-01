@@ -87,12 +87,12 @@
               "command": "cp .env.example .env"
             },
             {
-              "label": "Generate throwaway keys for local testing",
-              "command": "{run:keys:generate}"
+              "label": "Get testnet HBAR and put the account in OPERATOR_ID and OPERATOR_KEY",
+              "url": "https://portal.hedera.com/faucet"
             },
             {
-              "label": "Get testnet HBAR for the treasury account",
-              "url": "https://portal.hedera.com/faucet"
+              "label": "Generate throwaway committee, infrastructure and member keys and accounts",
+              "command": "{run:keys:generate} -- --create-accounts"
             }
           ]
         },

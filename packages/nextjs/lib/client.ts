@@ -1,4 +1,13 @@
-import { AccountId, Client, PrivateKey, TokenId, TopicId, Transaction } from "@hiero-ledger/sdk";
+import {
+  AccountCreateTransaction,
+  AccountId,
+  Client,
+  Hbar,
+  PrivateKey,
+  TokenId,
+  TopicId,
+  Transaction,
+} from "@hiero-ledger/sdk";
 import { config } from "dotenv";
 import * as path from "path";
 
@@ -145,4 +154,16 @@ export const executeTransaction = async (client: Client, transaction: Transactio
   } catch (error) {
     throw new Error(`${action} failed: ${error instanceof Error ? error.message : String(error)}`);
   }
+};
+
+// For local testing: the client's operator funds a new account controlled by `key`.
+export const createAccount = async (client: Client, key: PrivateKey, initialHbar: number) => {
+  const transaction = new AccountCreateTransaction()
+    .setKeyWithoutAlias(key.publicKey)
+    .setInitialBalance(new Hbar(initialHbar));
+  const { accountId } = await executeTransaction(client, transaction, "Creating an account");
+  if (!accountId) {
+    throw new Error("Creating an account returned no account id");
+  }
+  return accountId;
 };
