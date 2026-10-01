@@ -1,0 +1,70 @@
+import { PrivateKey } from "@hiero-ledger/sdk";
+import { describe, expect, it } from "vitest";
+import { createClient, parsePrivateKey, readMirrorUrl, readNetwork, readOperator } from "~~/lib/client";
+
+const captureMessage = (action: () => unknown) => {
+  try {
+    action();
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  }
+  throw new Error("Expected the action to throw");
+};
+
+describe("client", () => {
+  it("defaults to testnet when HEDERA_NETWORK is unset or blank", () => {
+    expect(readNetwork({})).toBe("testnet");
+    expect(readNetwork({ HEDERA_NETWORK: "  " })).toBe("testnet");
+  });
+
+  it("rejects an unknown network and names the value", () => {
+    expect(() => readNetwork({ HEDERA_NETWORK: "devnet" })).toThrow('got "devnet"');
+    expect(() => readNetwork({ HEDERA_NETWORK: "toString" })).toThrow('got "toString"');
+  });
+
+  it("uses the public mirror node unless MIRROR_NODE_URL overrides it", () => {
+    expect(readMirrorUrl("testnet", {})).toBe("https://testnet.mirrornode.hedera.com");
+    expect(readMirrorUrl("testnet", { MIRROR_NODE_URL: "http://localhost:5551/" })).toBe("http://localhost:5551");
+  });
+
+  it("names the missing operator variable", () => {
+    expect(() => readOperator({ OPERATOR_KEY: "x" })).toThrow("OPERATOR_ID is not set");
+    expect(() => readOperator({ OPERATOR_ID: "0.0.1234" })).toThrow("OPERATOR_KEY is not set");
+  });
+
+  it("names an invalid account id", () => {
+    const key = PrivateKey.generateED25519().toStringDer();
+
+    expect(() => readOperator({ OPERATOR_ID: "not-an-account", OPERATOR_KEY: key })).toThrow('"not-an-account"');
+  });
+
+  it("parses DER keys of both types and 0x-prefixed ECDSA hex", () => {
+    const ed25519 = PrivateKey.generateED25519();
+    const ecdsa = PrivateKey.generateECDSA();
+
+    expect(parsePrivateKey(ed25519.toStringDer(), "KEY").toStringDer()).toBe(ed25519.toStringDer());
+    expect(parsePrivateKey(ecdsa.toStringDer(), "KEY").toStringDer()).toBe(ecdsa.toStringDer());
+    expect(parsePrivateKey(`0x${ecdsa.toStringRaw()}`, "KEY").toStringDer()).toBe(ecdsa.toStringDer());
+  });
+
+  it("rejects a malformed key without echoing it", () => {
+    const secret = "deadbeef-not-a-key";
+    const message = captureMessage(() => parsePrivateKey(secret, "OPERATOR_KEY"));
+
+    expect(message).toContain("OPERATOR_KEY is not a valid private key");
+    expect(message).not.toContain(secret);
+  });
+
+  it("builds a client for the configured network with the operator set", () => {
+    const key = PrivateKey.generateECDSA();
+    const client = createClient({
+      HEDERA_NETWORK: "testnet",
+      OPERATOR_ID: "0.0.1234",
+      OPERATOR_KEY: key.toStringDer(),
+    });
+
+    expect(client.operatorAccountId?.toString()).toBe("0.0.1234");
+    expect(client.operatorPublicKey?.toStringDer()).toBe(key.publicKey.toStringDer());
+    client.close();
+  });
+});
