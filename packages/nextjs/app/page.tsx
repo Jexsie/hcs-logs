@@ -6,11 +6,11 @@ import { ParcelView } from "~~/components/verify/ParcelView";
 import { SearchForm } from "~~/components/verify/SearchForm";
 import { useParcelSearch } from "~~/hooks/useParcelSearch";
 import { HederaNetwork } from "~~/lib/network";
-import { readVerifyConfig } from "~~/utils/verifyConfig";
+import { readPublicConfig } from "~~/utils/publicConfig";
 
 const readConfig = () => {
   try {
-    const config = readVerifyConfig();
+    const config = readPublicConfig();
     return config.topicId
       ? { ...config, topicId: config.topicId }
       : { error: "TOPIC_ID is not set for this deployment." };

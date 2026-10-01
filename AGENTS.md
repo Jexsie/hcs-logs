@@ -43,6 +43,11 @@ Do not break these:
 - **The page stays SDK-free and public.** Browser code (`app/page.tsx`, `components/`, `hooks/`, `utils/`) may import only `lib/network`, `lib/mirror`,
   `lib/verify`, `lib/hash` and `lib/types`, plus type-only imports (`import type`) from other `lib/` files. Never import `lib/client` or anything using the SDK, `fs` or a key there,
   and never expose more than `HEDERA_NETWORK`, `MIRROR_NODE_URL` and `TOPIC_ID` through `next.config.ts`.
+- **The tracking page stays SDK-free; the portal may use the SDK.** `/portal` builds and signs transactions in the
+  browser through `lib/anchor`, `lib/records` and the wallet. Neither page may import `lib/client`, `lib/store` or
+  `lib/submit`, which use Node APIs or keys.
+- **The portal's server saves only confirmed records.** `app/api/parcels/[parcelId]/records` writes a record only after
+  the mirror node shows a successful submission to this topic whose anchor equals the record's.
 - **The browser verifies, the server only serves.** `app/api/parcels/[parcelId]` returns record files byte for byte; the
   page hashes them against Hedera and shows a record's content only if it matches. Never verify on the server.
 

@@ -16,8 +16,9 @@ import {
 } from "~~/lib/client";
 import { fetchAnchors, fetchTokenBalance } from "~~/lib/mirror";
 import { readMirrorUrl, readNetwork } from "~~/lib/network";
+import { generateEvent, generateParcel, serializeRecord } from "~~/lib/records";
 import { recordExists } from "~~/lib/store";
-import { anchorRecord, generateEvent, generateParcel, publishToTopic, serializeRecord } from "~~/lib/submit";
+import { anchorRecord, publishToTopic } from "~~/lib/submit";
 import { associateFreight, createFreightToken, sendFreight } from "~~/lib/token";
 import { createRecordsTopic, getTopicInfo, updateFees } from "~~/lib/topic";
 

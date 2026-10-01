@@ -86,11 +86,15 @@
       },
       {
         "key": "MAX_CUSTOM_FEE",
-        "description": "Most Freight a member will pay per submission across both collectors (default 3)"
+        "description": "Most Freight a member will pay per CLI submission (default 3, as agreed by the committee)"
       },
       {
         "key": "MIRROR_NODE_URL",
         "description": "Optional mirror node override; defaults to the public one"
+      },
+      {
+        "key": "WALLETCONNECT_PROJECT_ID",
+        "description": "WalletConnect (Reown) project id for the member portal, free at https://cloud.reown.com"
       }
     ],
     "outro": {

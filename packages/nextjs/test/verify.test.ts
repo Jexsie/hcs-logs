@@ -2,8 +2,10 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { generateEvent, generateParcel, serializeRecord } from "~~/lib/records";
 import { readRecords, recordPath } from "~~/lib/store";
-import { anchorRecord, generateEvent, generateParcel, serializeRecord } from "~~/lib/submit";
+import { anchorRecord } from "~~/lib/submit";
+import { Anchor } from "~~/lib/types";
 import { AnchoredMessage, anchorsForParcel, compareRecord, compareRecords } from "~~/lib/verify";
 
 const PARCEL_ID = "IND-2026-0041";
@@ -15,9 +17,9 @@ describe("verification", () => {
   beforeEach(async () => {
     dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "hcs-logs-verify-"));
     published = [];
-    const publish = vi.fn(async (message: string) => {
+    const publish = vi.fn(async (anchor: Anchor) => {
       published.push({
-        ...JSON.parse(message),
+        ...anchor,
         consensusTimestamp: `1700000000.${published.length}`,
         sequenceNumber: published.length + 1,
       });
@@ -30,7 +32,13 @@ describe("verification", () => {
       serializeRecord(generateParcel(PARCEL_ID, "Lakeside Haulage")),
       dataDir,
     );
-    await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "shipped")), dataDir);
+    await anchorRecord(
+      publish,
+      PARCEL_ID,
+      "event",
+      serializeRecord(generateEvent(PARCEL_ID, "shipped", { origin: "Kampala, UG" })),
+      dataDir,
+    );
     await anchorRecord(publish, PARCEL_ID, "event", serializeRecord(generateEvent(PARCEL_ID, "delivered")), dataDir);
   });
 

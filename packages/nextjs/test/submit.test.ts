@@ -3,8 +3,9 @@ import * as os from "os";
 import * as path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hashBytes } from "~~/lib/hash";
+import { generateEvent, generateParcel, serializeRecord } from "~~/lib/records";
 import { listRecordFiles } from "~~/lib/store";
-import { anchorRecord, generateEvent, generateParcel, serializeRecord } from "~~/lib/submit";
+import { anchorRecord } from "~~/lib/submit";
 
 const PARCEL_ID = "IND-2026-0041";
 
@@ -40,7 +41,7 @@ describe("anchorRecord", () => {
       dataDir,
     );
 
-    const message = JSON.parse(publish.mock.calls[0][0]);
+    const message = publish.mock.calls[0][0];
 
     expect(Object.keys(message).sort()).toEqual(["hash", "kind", "parcelId", "v"]);
     expect(message).toMatchObject({ v: 1, parcelId: PARCEL_ID, kind: "parcel" });
@@ -55,7 +56,7 @@ describe("anchorRecord", () => {
 
     expect(written.equals(bytes)).toBe(true);
     expect(anchor.hash).toBe(await hashBytes(written));
-    expect(JSON.parse(publish.mock.calls[0][0]).hash).toBe(await hashBytes(written));
+    expect(publish.mock.calls[0][0].hash).toBe(await hashBytes(written));
   });
 
   it("publishes before it writes", async () => {

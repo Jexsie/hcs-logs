@@ -60,3 +60,12 @@ describe("mirror", () => {
     expect(await fetchTokenBalance(MIRROR, "0.0.8", "0.0.5")).toBe(0);
   });
 });
+
+describe("mirrorTransactionId", () => {
+  it("converts an SDK transaction id to the mirror node's form", async () => {
+    const { mirrorTransactionId } = await import("~~/lib/mirror");
+
+    expect(mirrorTransactionId("0.0.10807565@1790865367.103654647")).toBe("0.0.10807565-1790865367-103654647");
+    expect(() => mirrorTransactionId("nonsense")).toThrow('got "nonsense"');
+  });
+});

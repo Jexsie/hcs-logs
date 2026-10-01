@@ -105,6 +105,24 @@ Links such as `/?parcel=IND-2026-0041` open straight on a parcel, so a member ca
 The page reads `HEDERA_NETWORK`, `MIRROR_NODE_URL` and `TOPIC_ID` from the root `.env` **at build time**, and only those
 three public values reach the browser. Rebuild after changing the topic.
 
+## The member portal
+
+`/portal` is where member companies register parcels and record their events, each submission approved in the
+member's own wallet and paid from its Freight balance.
+
+1. **Connect a wallet.** HashPack, Kabila or another Hedera wallet connects through WalletConnect (Reown AppKit,
+   Hedera native namespace). Set `WALLETCONNECT_PROJECT_ID` in `.env` first; a project id is free at
+   [cloud.reown.com](https://cloud.reown.com). The account must be associated with Freight and hold some.
+2. **Add parcel** or **Add event.** Each button puts a freshly randomized record in the text box, stamped with the
+   current time. Add parcel picks a new parcel ID and route; Add event reads the parcel's records and drafts its next
+   step (shipped, then customs, then delivered) at the right place along that route. Edit the text if you need to.
+3. **Set the maximum fee.** It defaults to the 3 FRT the committee agreed, and the portal shows the topic's current
+   fee beside it. If the fee is higher when the submission runs, the network refuses it and nothing is charged.
+4. **Submit and approve.** The browser hashes the exact text, builds the anchor transaction with `max_custom_fee`, and
+   the wallet asks the member to approve it. After consensus the server saves the record, but only once the mirror
+   node shows a successful submission to this topic carrying exactly that record's anchor. Nothing the browser says is
+   taken on trust, and the same record is never saved twice.
+
 ## Quick start
 
 Prerequisites:
@@ -155,14 +173,19 @@ packages/nextjs/
     store.ts    reading and writing record files under data/
     token.ts    Freight creation, association and transfer
     topic.ts    the HIP-991 topic, fee updates and the on-chain configuration check
-    submit.ts   record generation and ledger-first submission with max_custom_fee
+    records.ts  randomized parcel and event generation, shared by the CLI and the portal
+    anchor.ts   the anchor and its max_custom_fee submission transaction, shared by the CLI and the portal
+    submit.ts   ledger-first submission from the CLI
     mirror.ts   mirror node reads for topic messages and token balances
     verify.ts   hashing records and comparing them against mirror node anchors
   scripts/      one file per root script
   test/         Vitest suites; live.test.ts runs only with test:network
   app/          the public verification page
   components/verify/  search form, status card and timeline
-  app/api/parcels/   serves a parcel's record files for the page to verify
+  app/api/parcels/   serves a parcel's record files; records/ saves a portal submission after checking its anchor
+  app/portal/, components/portal/  the member portal
+  hooks/useHederaWallet.ts  the WalletConnect session and wallet signing
+  utils/portalSubmit.ts     the portal's ledger-first submission
   hooks/useParcelSearch.ts  mirror node lookup for the page
 ```
 

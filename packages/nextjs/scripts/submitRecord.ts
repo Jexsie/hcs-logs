@@ -12,20 +12,15 @@ import {
   readTopicId,
   readWholeNumber,
 } from "~~/lib/client";
-import { assertParcelId } from "~~/lib/store";
-import {
-  EVENT_TYPES,
-  EventType,
-  anchorRecord,
-  generateEvent,
-  generateParcel,
-  publishToTopic,
-  serializeRecord,
-} from "~~/lib/submit";
+import { EVENT_TYPES, EventType, generateEvent, generateParcel, nextEventType, serializeRecord } from "~~/lib/records";
+import { assertParcelId, parcelExists, readRecords } from "~~/lib/store";
+import { anchorRecord, publishToTopic } from "~~/lib/submit";
 import { Anchor } from "~~/lib/types";
+import { parcelHistory } from "~~/utils/recordDetails";
 
 const USAGE = [
   "Usage: npm run submit -- <parcel|event> <parcelId> (--member <name> | --committee <1-4>) [--type <type>]",
+  "  --type defaults to the parcel's next step",
   `  members: ${MEMBER_SLUGS.join(", ")}`,
   `  event types: ${EVENT_TYPES.join(", ")}`,
 ].join("\n");
@@ -38,7 +33,7 @@ const readArgs = () => {
   const { positionals, values } = parseArgs({
     allowPositionals: true,
     options: {
-      type: { type: "string", default: "shipped" },
+      type: { type: "string" },
       member: { type: "string" },
       committee: { type: "string" },
     },
@@ -50,7 +45,7 @@ const readArgs = () => {
   if ((values.member === undefined) === (values.committee === undefined)) {
     throw new Error(`Pass exactly one of --member or --committee\n${USAGE}`);
   }
-  if (!isEventType(values.type)) {
+  if (values.type !== undefined && !isEventType(values.type)) {
     throw new Error(`--type must be one of ${EVENT_TYPES.join(", ")}, got "${values.type}"`);
   }
   assertParcelId(parcelId);
@@ -76,6 +71,16 @@ const readCommitteeSubmitter = (position: string) => {
   return { account: readOperator(), signers: [key], label: `committee representative ${index}` };
 };
 
+// An event follows the parcel's route, and without --type it is the parcel's next step.
+const buildEvent = (parcelId: string, type?: EventType) => {
+  const { parcel, eventTypes } = parcelHistory(parcelExists(parcelId) ? readRecords(parcelId) : []);
+  const next = type ?? nextEventType(eventTypes);
+  if (!next) {
+    throw new Error(`Parcel "${parcelId}" has already been delivered; pass --type to record another event`);
+  }
+  return generateEvent(parcelId, next, parcel);
+};
+
 async function main() {
   loadEnvFile();
   const { kind, parcelId, type, member, committee } = readArgs();
@@ -86,7 +91,7 @@ async function main() {
   const client = createClient(submitter.account);
 
   try {
-    const record = kind === "parcel" ? generateParcel(parcelId, submitter.label) : generateEvent(parcelId, type);
+    const record = kind === "parcel" ? generateParcel(parcelId, submitter.label) : buildEvent(parcelId, type);
     const publish = publishToTopic(client, topicId, tokenId, maxFee, submitter.signers);
     const { anchor, filePath, transactionId } = await anchorRecord(publish, parcelId, kind, serializeRecord(record));
 

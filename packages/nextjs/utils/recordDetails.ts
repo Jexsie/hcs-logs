@@ -1,4 +1,4 @@
-import type { generateEvent, generateParcel } from "~~/lib/submit";
+import type { generateEvent, generateParcel } from "~~/lib/records";
 
 type ParcelDetails = Partial<ReturnType<typeof generateParcel>>;
 type EventDetails = Partial<ReturnType<typeof generateEvent>>;
@@ -35,3 +35,9 @@ export const formatConsensusTime = (timestamp: string) =>
     dateStyle: "medium",
     timeStyle: "short",
   });
+
+// What has been recorded for a parcel so far: its details and the types of its events, in record-name order.
+export const parcelHistory = (records: { kind: "parcel" | "event"; bytes: Uint8Array }[]) => ({
+  parcel: asParcel(readRecord(records.find(({ kind }) => kind === "parcel")?.bytes ?? new Uint8Array())),
+  eventTypes: records.flatMap(({ kind, bytes }) => (kind === "event" ? [asEvent(readRecord(bytes))?.type ?? ""] : [])),
+});
