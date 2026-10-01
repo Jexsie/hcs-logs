@@ -17,7 +17,7 @@ const MIRROR_URLS = {
   previewnet: "https://previewnet.mirrornode.hedera.com",
 };
 
-export type HederaNetwork = keyof typeof MIRROR_URLS;
+type HederaNetwork = keyof typeof MIRROR_URLS;
 
 // Not NodeJS.ProcessEnv: Next.js makes NODE_ENV required on it, which callers and tests should not have to supply.
 type Env = Record<string, string | undefined>;
@@ -48,7 +48,7 @@ export const readMirrorUrl = (network: HederaNetwork, env: Env = process.env) =>
   return url.endsWith("/") ? url.slice(0, -1) : url;
 };
 
-export const parseAccountId = (text: string, label: string) => {
+const parseAccountId = (text: string, label: string) => {
   try {
     return AccountId.fromString(text);
   } catch {
@@ -79,7 +79,7 @@ export const readAccount = (prefix: string, env: Env = process.env) => ({
 
 export const readOperator = (env: Env = process.env) => readAccount("OPERATOR", env);
 
-export const readAccountId = (name: string, env: Env = process.env) => parseAccountId(requireEnv(env, name), name);
+const readAccountId = (name: string, env: Env = process.env) => parseAccountId(requireEnv(env, name), name);
 
 export const parseWholeNumber = (text: string, label: string) => {
   const value = Number(text);

@@ -13,7 +13,7 @@ import { PARCEL_FILE, nextEventFileName, recordExists, writeRecord } from "~~/li
 import { Anchor } from "~~/lib/types";
 
 // Sends one anchor message and resolves once it has reached consensus.
-export type Publish = (message: string) => Promise<void>;
+type Publish = (message: string) => Promise<void>;
 
 export const EVENT_TYPES = ["picked-up", "in-transit", "at-hub", "out-for-delivery", "delivered"] as const;
 
@@ -42,7 +42,7 @@ export const generateEvent = (parcelId: string, type: EventType, now = new Date(
 // The record is stringified exactly once. These bytes are hashed, anchored and written; nothing re-serializes them.
 export const serializeRecord = (record: object) => Buffer.from(`${JSON.stringify(record, null, 2)}\n`, "utf8");
 
-export const buildAnchor = (parcelId: string, kind: Anchor["kind"], bytes: Uint8Array): Anchor => ({
+const buildAnchor = (parcelId: string, kind: Anchor["kind"], bytes: Uint8Array): Anchor => ({
   v: 1,
   parcelId,
   kind,

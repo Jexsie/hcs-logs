@@ -15,7 +15,7 @@ import {
 import { executeTransaction } from "~~/lib/client";
 
 // What a member pays per submission: one Freight-denominated fee to each collector.
-export type FeeSchedule = {
+type FeeSchedule = {
   tokenId: TokenId;
   treasuryId: AccountId;
   treasuryFee: number;

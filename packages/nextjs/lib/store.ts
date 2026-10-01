@@ -26,7 +26,7 @@ const assertFileName = (fileName: string) => {
   }
 };
 
-export const parcelDir = (parcelId: string, dataDir = DEFAULT_DATA_DIR) => {
+const parcelDir = (parcelId: string, dataDir = DEFAULT_DATA_DIR) => {
   assertParcelId(parcelId);
   return path.join(dataDir, parcelId);
 };

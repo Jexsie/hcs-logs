@@ -18,7 +18,7 @@ const fetchJson = async <T>(url: string): Promise<T> => {
   return (await response.json()) as T;
 };
 
-export const fetchTopicMessages = async (mirrorUrl: string, topicId: string) => {
+const fetchTopicMessages = async (mirrorUrl: string, topicId: string) => {
   const messages: MessagesPage["messages"] = [];
   let next: string | null = `/api/v1/topics/${topicId}/messages?limit=100&order=asc`;
   while (next) {
