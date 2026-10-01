@@ -22,7 +22,7 @@ describe("loadEnvFile", () => {
     expect(JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).workspaces.packages).toContain(
       "packages/nextjs",
     );
-    expect(fs.existsSync(path.join(root, "template.json"))).toBe(true);
+    expect(fs.existsSync(path.join(root, ".env.example"))).toBe(true);
   });
 
   it("loads variables from the file into the target environment", () => {
