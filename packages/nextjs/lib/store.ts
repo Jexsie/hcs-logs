@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { Anchor } from "~~/lib/types";
 
 const DEFAULT_DATA_DIR = "data";
 
@@ -70,5 +71,6 @@ export const listRecordFiles = (parcelId: string, dataDir = DEFAULT_DATA_DIR) =>
 export const readRecords = (parcelId: string, dataDir = DEFAULT_DATA_DIR) =>
   listRecordFiles(parcelId, dataDir).map(fileName => ({
     fileName,
+    kind: (fileName === PARCEL_FILE ? "parcel" : "event") as Anchor["kind"],
     bytes: fs.readFileSync(recordPath(parcelId, fileName, dataDir)),
   }));

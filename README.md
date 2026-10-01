@@ -78,6 +78,22 @@ No business detail is ever published.
 reports every record as verified or changed. Edit one file in a text editor and that record flips to changed, while
 the others stay verified.
 
+## The verification page
+
+`npm run next:dev` (or `next:build` then `next:start`) serves a public verifier at `/`. It needs no wallet, account or
+login, and has no server side of its own: the browser talks straight to the public mirror node.
+
+1. **Search** a parcel ID. The page lists every anchor for that parcel on the topic: parcel or event, the record's
+   SHA-256 fingerprint, when it reached consensus, and a HashScan link.
+2. **Check your copies.** Drop the parcel's JSON files onto the page. Each file is hashed in the browser with Web Crypto
+   and compared against those anchors. Files are never uploaded: the records hold business detail that is deliberately
+   kept off the ledger. A renamed file still verifies; a file changed by a single byte does not.
+
+Links such as `/?parcel=IND-2026-0041` open straight on a parcel, so a member can send a customer a verification link.
+
+The page reads `HEDERA_NETWORK`, `MIRROR_NODE_URL` and `TOPIC_ID` from the root `.env` **at build time**, and only those
+three public values reach the browser. Rebuild after changing the topic.
+
 ## Quick start
 
 Prerequisites:
@@ -96,6 +112,7 @@ npm run submit -- parcel IND-2026-0041 --member lakeside
 npm run submit -- event IND-2026-0041 --member nile --type picked-up
 npm run submit -- event IND-2026-0041 --committee 2 --type at-hub
 npm run verify -- IND-2026-0041
+npm run next:dev                   # then open http://localhost:3000/?parcel=IND-2026-0041
 ```
 
 The mirror node trails consensus by a few seconds, so verifying straight after a submission can briefly report a new
@@ -120,17 +137,20 @@ record as changed.
 packages/nextjs/
   lib/
     types.ts    the anchor envelope
-    client.ts   network, operator and committee config, client construction, transaction execution
-    hash.ts     SHA-256 over raw bytes
+    network.ts  network and mirror node settings, without the SDK so the page can use them
+    client.ts   operator, member and committee config, client construction, transaction execution
+    hash.ts     SHA-256 over raw bytes with Web Crypto, shared by the CLI and the page
     store.ts    reading and writing record files under data/
     token.ts    Freight creation, association and transfer
     topic.ts    the HIP-991 topic, fee updates and the on-chain configuration check
     submit.ts   record generation and ledger-first submission with max_custom_fee
     mirror.ts   mirror node reads for topic messages and token balances
-    verify.ts   hashing files and comparing them against mirror node anchors
+    verify.ts   hashing records and comparing them against mirror node anchors
   scripts/      one file per root script
-  test/         Vitest suites; network.test.ts runs only with test:network
-  app/          Next.js shell for the verification UI that comes next
+  test/         Vitest suites; live.test.ts runs only with test:network
+  app/          the public verification page
+  components/verify/  search form, anchored trail and in-browser file check
+  hooks/useParcelSearch.ts  mirror node lookup for the page
 ```
 
 ## Limitations

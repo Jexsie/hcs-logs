@@ -5,8 +5,6 @@ import {
   parsePrivateKey,
   readCommitteeKeys,
   readCommitteeThreshold,
-  readMirrorUrl,
-  readNetwork,
   readOperator,
   readWholeNumber,
 } from "~~/lib/client";
@@ -21,21 +19,6 @@ const captureMessage = (action: () => unknown) => {
 };
 
 describe("client", () => {
-  it("defaults to testnet when HEDERA_NETWORK is unset or blank", () => {
-    expect(readNetwork({})).toBe("testnet");
-    expect(readNetwork({ HEDERA_NETWORK: "  " })).toBe("testnet");
-  });
-
-  it("rejects an unknown network and names the value", () => {
-    expect(() => readNetwork({ HEDERA_NETWORK: "devnet" })).toThrow('got "devnet"');
-    expect(() => readNetwork({ HEDERA_NETWORK: "toString" })).toThrow('got "toString"');
-  });
-
-  it("uses the public mirror node unless MIRROR_NODE_URL overrides it", () => {
-    expect(readMirrorUrl("testnet", {})).toBe("https://testnet.mirrornode.hedera.com");
-    expect(readMirrorUrl("testnet", { MIRROR_NODE_URL: "http://localhost:5551/" })).toBe("http://localhost:5551");
-  });
-
   it("names the missing operator variable", () => {
     expect(() => readOperator({ OPERATOR_KEY: "x" })).toThrow("OPERATOR_ID is not set");
     expect(() => readOperator({ OPERATOR_ID: "0.0.1234" })).toThrow("OPERATOR_KEY is not set");

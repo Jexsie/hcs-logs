@@ -14,7 +14,7 @@
     "start": "next dev",
     "submit": "tsx scripts/submitRecord.ts",
     "test": "vitest run",
-    "test:network": "HCS_LOGS_NETWORK_TESTS=1 vitest run test/network.test.ts",
+    "test:network": "HCS_LOGS_NETWORK_TESTS=1 vitest run test/live.test.ts",
     "token:create": "tsx scripts/createToken.ts",
     "topic:create": "tsx scripts/createTopic.ts",
     "verify": "tsx scripts/verifyParcel.ts"

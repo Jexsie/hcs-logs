@@ -43,11 +43,11 @@ export const generateEvent = (parcelId: string, type: EventType, now = new Date(
 // The record is stringified exactly once. These bytes are hashed, anchored and written; nothing re-serializes them.
 export const serializeRecord = (record: object) => Buffer.from(`${JSON.stringify(record, null, 2)}\n`, "utf8");
 
-const buildAnchor = (parcelId: string, kind: Anchor["kind"], bytes: Uint8Array): Anchor => ({
+const buildAnchor = async (parcelId: string, kind: Anchor["kind"], bytes: Uint8Array): Promise<Anchor> => ({
   v: 1,
   parcelId,
   kind,
-  hash: hashBytes(bytes),
+  hash: await hashBytes(bytes),
 });
 
 const chooseFileName = (parcelId: string, kind: Anchor["kind"], dataDir?: string) => {
@@ -74,7 +74,7 @@ export const anchorRecord = async (
   if (recordExists(parcelId, fileName, dataDir)) {
     throw new Error(`Record ${parcelId}/${fileName} already exists; a parcel is registered once`);
   }
-  const anchor = buildAnchor(parcelId, kind, bytes);
+  const anchor = await buildAnchor(parcelId, kind, bytes);
   const transactionId = await publish(JSON.stringify(anchor));
   const filePath = writeRecord(parcelId, fileName, bytes, dataDir);
   return { anchor, filePath, transactionId };

@@ -1,27 +1,30 @@
 import { hashBytes } from "~~/lib/hash";
-import { fetchAnchors } from "~~/lib/mirror";
-import { PARCEL_FILE, readRecords } from "~~/lib/store";
 import { Anchor } from "~~/lib/types";
 
-type AnchoredMessage = Anchor & { consensusTimestamp: string };
+export type AnchoredMessage = Anchor & { consensusTimestamp: string; sequenceNumber: number };
 
-// A file is verified when an anchor for the same parcel and kind carries the hash of its bytes as they are now.
+// A record is verified when an anchor for the same parcel carries the hash of its bytes as they are now. The CLI knows
+// each file's kind from its name and requires the anchor to match it; the page takes files of any name, so it does not.
+export const compareRecord = async (
+  parcelId: string,
+  record: { fileName: string; bytes: Uint8Array; kind?: Anchor["kind"] },
+  anchors: AnchoredMessage[],
+) => {
+  const hash = await hashBytes(record.bytes);
+  const anchor = anchors.find(
+    candidate =>
+      candidate.parcelId === parcelId &&
+      candidate.hash === hash &&
+      (record.kind === undefined || candidate.kind === record.kind),
+  );
+  return { fileName: record.fileName, hash, anchor, status: anchor ? ("verified" as const) : ("changed" as const) };
+};
+
 export const compareRecords = (
   parcelId: string,
-  records: { fileName: string; bytes: Uint8Array }[],
+  records: { fileName: string; bytes: Uint8Array; kind?: Anchor["kind"] }[],
   anchors: AnchoredMessage[],
-) =>
-  records.map(({ fileName, bytes }) => {
-    const hash = hashBytes(bytes);
-    const kind = fileName === PARCEL_FILE ? "parcel" : "event";
-    const anchor = anchors.find(
-      candidate => candidate.parcelId === parcelId && candidate.kind === kind && candidate.hash === hash,
-    );
-    return { fileName, hash, status: anchor ? "verified" : "changed", anchoredAt: anchor?.consensusTimestamp };
-  });
+) => Promise.all(records.map(record => compareRecord(parcelId, record, anchors)));
 
-export const verifyParcel = async (parcelId: string, mirrorUrl: string, topicId: string, dataDir?: string) => {
-  const records = readRecords(parcelId, dataDir);
-  const anchors = await fetchAnchors(mirrorUrl, topicId);
-  return compareRecords(parcelId, records, anchors);
-};
+export const anchorsForParcel = (parcelId: string, anchors: AnchoredMessage[]) =>
+  anchors.filter(anchor => anchor.parcelId === parcelId).sort((a, b) => a.sequenceNumber - b.sequenceNumber);

@@ -26,14 +26,15 @@ describe("store", () => {
     expect(fs.readFileSync(filePath).equals(bytes)).toBe(true);
   });
 
-  it("reads back bytes whose hash matches the hash of the bytes written", () => {
+  it("reads back bytes whose hash matches the hash of the bytes written", async () => {
     const bytes = Buffer.from('{"kind":"event","note":"picked up"}', "utf8");
     writeRecord(PARCEL_ID, "event-0001.json", bytes, dataDir);
 
     const [record] = readRecords(PARCEL_ID, dataDir);
 
     expect(record.fileName).toBe("event-0001.json");
-    expect(hashBytes(record.bytes)).toBe(hashBytes(bytes));
+    expect(await hashBytes(record.bytes)).toBe(await hashBytes(bytes));
+    expect(record.kind).toBe("event");
   });
 
   it("refuses to overwrite an existing record and leaves it untouched", () => {

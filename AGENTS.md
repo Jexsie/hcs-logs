@@ -23,6 +23,7 @@ npm run keys:generate | token:create | topic:create | fee:update | submit | veri
 
 - `packages/nextjs/lib/`: the library, one job per file (see README)
 - `packages/nextjs/scripts/`: thin entry points for root scripts
+- `packages/nextjs/app/`, `components/verify/`: the public verification page
 - `packages/nextjs/test/`: Vitest suites
 - `.env` lives at the repository root; `loadEnvFile()` reads it from there
 - `packages/nextjs/data/`: local records, gitignored
@@ -39,6 +40,10 @@ Do not break these:
 - **The committee governs the topic.** The admin and fee schedule keys are the same 3-of-4 committee key, and the
   exempt key is 1-of-4.
 - **Balances come from the mirror node.** `AccountBalanceQuery` is deprecated.
+- **The page stays SDK-free and public.** `app/`, `components/` and `hooks/` may import only `lib/network`, `lib/mirror`,
+  `lib/verify`, `lib/hash` and `lib/types`. Never import `lib/client` or anything using the SDK, `fs` or a key there,
+  and never expose more than `HEDERA_NETWORK`, `MIRROR_NODE_URL` and `TOPIC_ID` through `next.config.ts`.
+- **Files dropped on the page never leave the browser.**
 
 ## Style
 

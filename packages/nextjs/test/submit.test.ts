@@ -54,8 +54,8 @@ describe("anchorRecord", () => {
     const written = fs.readFileSync(filePath);
 
     expect(written.equals(bytes)).toBe(true);
-    expect(anchor.hash).toBe(hashBytes(written));
-    expect(JSON.parse(publish.mock.calls[0][0]).hash).toBe(hashBytes(written));
+    expect(anchor.hash).toBe(await hashBytes(written));
+    expect(JSON.parse(publish.mock.calls[0][0]).hash).toBe(await hashBytes(written));
   });
 
   it("publishes before it writes", async () => {

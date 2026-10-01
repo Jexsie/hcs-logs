@@ -1,5 +1,8 @@
-import { loadEnvFile, readMirrorUrl, readNetwork, readTopicId } from "~~/lib/client";
-import { verifyParcel } from "~~/lib/verify";
+import { loadEnvFile, readTopicId } from "~~/lib/client";
+import { fetchAnchors } from "~~/lib/mirror";
+import { readMirrorUrl, readNetwork } from "~~/lib/network";
+import { readRecords } from "~~/lib/store";
+import { compareRecords } from "~~/lib/verify";
 
 // Verification is free: it reads files from disk and anchors from the public mirror node, with no operator account.
 async function main() {
@@ -8,13 +11,15 @@ async function main() {
   if (!parcelId) {
     throw new Error("Usage: npm run verify -- <parcelId>");
   }
-  const mirrorUrl = readMirrorUrl(readNetwork());
-  const topicId = readTopicId().toString();
+  const records = readRecords(parcelId);
+  const anchors = await fetchAnchors(readMirrorUrl(readNetwork()), readTopicId().toString());
 
-  const results = await verifyParcel(parcelId, mirrorUrl, topicId);
-  results.forEach(({ fileName, status, anchoredAt }) =>
+  const results = await compareRecords(parcelId, records, anchors);
+  results.forEach(({ fileName, status, anchor }) =>
     console.log(
-      status === "verified" ? `✅ ${fileName} verified, anchored at ${anchoredAt}` : `❌ ${fileName} changed`,
+      status === "verified"
+        ? `✅ ${fileName} verified, anchored at ${anchor?.consensusTimestamp}`
+        : `❌ ${fileName} changed`,
     ),
   );
 
