@@ -21,6 +21,11 @@ const readConfig = () => {
 
 const CONFIG = readConfig();
 
+// Customers see a plain message; whoever runs the site sees the actual configuration problem in the console.
+if ("error" in CONFIG) {
+  console.error(`Shipment tracking is not configured: ${CONFIG.error}`);
+}
+
 const Verifier = ({ network, mirrorUrl, topicId }: { network: HederaNetwork; mirrorUrl: string; topicId: string }) => {
   const { state, search } = useParcelSearch(mirrorUrl, topicId);
   const [initialParcel, setInitialParcel] = useState("");
@@ -39,35 +44,21 @@ const Verifier = ({ network, mirrorUrl, topicId }: { network: HederaNetwork; mir
 
   return (
     <>
-      <div className="bg-base-100 rounded-2xl shadow-lg p-6 sm:p-8 flex flex-col gap-3">
+      <div className="bg-base-100 rounded-2xl shadow-lg p-6 sm:p-8">
         <SearchForm initialValue={initialParcel} busy={state.status === "loading"} onSearch={handleSearch} />
-        <p className="m-0 text-xs text-base-content/60">
-          Checking topic{" "}
-          <a
-            href={`https://hashscan.io/${network}/topic/${topicId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="link font-mono"
-          >
-            {topicId}
-          </a>{" "}
-          on Hedera {network}. No wallet or account needed.
-        </p>
       </div>
 
       {state.status === "error" && (
         <div className="alert alert-error" role="alert">
-          <span>
-            Could not reach the mirror node to look up {state.parcelId}: {state.message}
-          </span>
+          <span>We couldn&apos;t load shipment {state.parcelId} just now. Please try again in a moment.</span>
         </div>
       )}
 
       {state.status === "found" && state.anchors.length === 0 && (
         <div className="alert" role="status">
           <span>
-            Nothing is anchored for <strong className="font-mono">{state.parcelId}</strong> on topic {topicId}. Check
-            the parcel ID, or try again in a few seconds if it was submitted just now.
+            We couldn&apos;t find a shipment with the ID <strong className="font-mono">{state.parcelId}</strong>. Check
+            the ID and try again. A shipment registered in the last minute may not appear yet.
           </span>
         </div>
       )}
@@ -84,15 +75,12 @@ const Home: NextPage = () => {
     <div className="flex flex-col grow items-center px-4 pt-12 pb-16">
       <div className="w-full max-w-3xl flex flex-col gap-6">
         <div className="text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold">Verify a cargo record</h1>
-          <p className="text-base-content/70 m-0">
-            Look up any Indiana Group parcel on the public Hedera ledger, then check that its records have not been
-            altered.
-          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold">Track your shipment</h1>
+          <p className="text-base-content/70 m-0">Enter the parcel ID you were given to see where your shipment is.</p>
         </div>
         {"error" in CONFIG ? (
           <div className="alert alert-warning" role="alert">
-            <span>This verifier is not configured: {CONFIG.error}</span>
+            <span>Shipment tracking is unavailable right now. Please try again later.</span>
           </div>
         ) : (
           <Verifier network={CONFIG.network} mirrorUrl={CONFIG.mirrorUrl} topicId={CONFIG.topicId} />

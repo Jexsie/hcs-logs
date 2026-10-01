@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Indiana Group">
+  <rect width="64" height="64" rx="14" fill="#1e3a8a"/>
+  <path d="M32 11 52 21.5 32 32 12 21.5Z" fill="#f59e0b"/>
+  <path d="M12 21.5 32 32v21L12 42.5Z" fill="#ffffff"/>
+  <path d="M52 21.5 32 32v21l20-10.5Z" fill="#c7d2fe"/>
+  <path d="M22 16.25 42 26.75v6.5" fill="none" stroke="#92400e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

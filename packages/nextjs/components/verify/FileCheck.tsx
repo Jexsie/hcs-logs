@@ -3,7 +3,7 @@
 import { DragEvent, useState } from "react";
 import { DocumentArrowUpIcon } from "@heroicons/react/24/outline";
 
-// Only collects files; hashing and matching happen in the caller. Nothing is uploaded.
+// Only collects files; checking happens in the caller. Nothing is uploaded.
 export const FileCheck = ({ onFiles }: { onFiles: (files: File[]) => void }) => {
   const [dragging, setDragging] = useState(false);
 
@@ -27,8 +27,8 @@ export const FileCheck = ({ onFiles }: { onFiles: (files: File[]) => void }) => 
       }`}
     >
       <DocumentArrowUpIcon className="h-8 w-8 text-primary" />
-      <span className="font-medium">Drop this parcel&apos;s record files here, or choose them</span>
-      <span className="text-sm text-base-content/70">Checked in your browser. Files are never uploaded anywhere.</span>
+      <span className="font-medium">Drop your documents here, or choose files</span>
+      <span className="text-sm text-base-content/70">They stay on your device and are never uploaded.</span>
       <input
         id="record-files"
         type="file"

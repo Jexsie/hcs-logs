@@ -4,8 +4,8 @@ import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-hbar/getMetadata";
 
 export const metadata = getMetadata({
-  title: "hcs-logs",
-  description: "Tamper-evident cargo records anchored on Hedera Consensus Service",
+  title: "Track your shipment",
+  description: "Enter your Indiana Group parcel ID to see the status of your shipment.",
 });
 
 const ScaffoldHbarApp = ({ children }: { children: React.ReactNode }) => {

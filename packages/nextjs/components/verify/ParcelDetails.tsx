@@ -1,7 +1,7 @@
 import { LedgerLink } from "~~/components/verify/LedgerLink";
 import { HederaNetwork } from "~~/lib/network";
 import { AnchoredMessage } from "~~/lib/verify";
-import { asParcel } from "~~/utils/recordDetails";
+import { asParcel, formatConsensusTime } from "~~/utils/recordDetails";
 
 const Detail = ({ label, value }: { label: string; value?: string | number }) => (
   <div className="flex flex-col">
@@ -13,41 +13,55 @@ const Detail = ({ label, value }: { label: string; value?: string | number }) =>
 export const ParcelDetails = ({
   parcelId,
   network,
-  anchor,
+  registered,
+  latest,
+  latestLabel,
   record,
 }: {
   parcelId: string;
   network: HederaNetwork;
-  anchor?: AnchoredMessage;
+  registered?: AnchoredMessage;
+  latest: AnchoredMessage;
+  latestLabel: string;
   record?: unknown;
 }) => {
   const parcel = asParcel(record);
 
   return (
-    <section className="bg-base-100 rounded-2xl shadow-md p-6 sm:p-8 flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold m-0 font-mono">{parcelId}</h2>
-        {anchor && <LedgerLink network={network} consensusTimestamp={anchor.consensusTimestamp} verified={!!parcel} />}
+    <section className="bg-base-100 rounded-2xl shadow-md p-6 sm:p-8 flex flex-col gap-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs uppercase tracking-wide text-base-content/60">Shipment</span>
+          <h2 className="text-2xl font-bold m-0 font-mono">{parcelId}</h2>
+        </div>
+        {registered && <LedgerLink network={network} consensusTimestamp={registered.consensusTimestamp} />}
       </div>
+
+      <div className="rounded-box bg-base-200 p-4 flex flex-col gap-1">
+        <span className="text-xs uppercase tracking-wide text-base-content/60">Latest update</span>
+        <span className="text-lg font-semibold">{latestLabel}</span>
+        <span className="text-sm text-base-content/70">{formatConsensusTime(latest.consensusTimestamp)}</span>
+      </div>
+
       {parcel ? (
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 m-0">
+          <Detail label="From" value={parcel.origin} />
+          <Detail label="To" value={parcel.destination} />
           <Detail label="Shipper" value={parcel.shipper} />
           <Detail label="Consignee" value={parcel.consignee} />
           <Detail
-            label="Route"
-            value={parcel.origin && parcel.destination && `${parcel.origin} → ${parcel.destination}`}
-          />
-          <Detail
-            label="Weight"
-            value={parcel.weightKg !== undefined ? `${parcel.weightKg} kg · ${parcel.pieces ?? "?"} pieces` : undefined}
+            label="Package"
+            value={parcel.weightKg !== undefined ? `${parcel.pieces ?? "?"} pieces · ${parcel.weightKg} kg` : undefined}
           />
           <Detail label="Handled by" value={parcel.handler} />
         </dl>
       ) : (
-        <p className="m-0 text-sm text-base-content/70">
-          The ledger holds only each record&apos;s fingerprint, so the parcel&apos;s details appear once you add its
-          record files below.
-        </p>
+        registered && (
+          <p className="m-0 text-sm text-base-content/70">
+            Registered {formatConsensusTime(registered.consensusTimestamp)}. Add your shipping documents below to see
+            the full shipment details.
+          </p>
+        )
       )}
     </section>
   );

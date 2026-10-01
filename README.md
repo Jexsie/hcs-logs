@@ -78,20 +78,19 @@ No business detail is ever published.
 reports every record as verified or changed. Edit one file in a text editor and that record flips to changed, while
 the others stay verified.
 
-## The verification page
+## The tracking page
 
-`npm run next:dev` (or `next:build` then `next:start`) serves a public verifier at `/`. It needs no wallet, account or
+`npm run next:dev` (or `next:build` then `next:start`) serves a public shipment tracker at `/`, branded for the Indiana Group and written for customers: no ledger
+vocabulary, just a parcel ID and the shipment's progress. It needs no wallet, account or
 login, and has no server side of its own: the browser talks straight to the public mirror node.
 
-1. **Search** a parcel ID. The page shows the parcel's timeline straight from the ledger: each record's kind and the
-   time it reached consensus, marked **Anchored** with a link to its HashScan transaction. The ledger holds only
-   fingerprints, so this is all anyone can see without the records.
-2. **Add the record files.** Drop the parcel's JSON files onto the page. Each file's raw bytes are hashed in the browser
-   with Web Crypto and matched against the anchors; only a file that matches is then read. Its details fill in the
-   parcel card (shipper, consignee, route, weight, handler) and its timeline step (for example "Picked up · Malaba
-   border post"), now marked **Verified** with the HashScan link. A file that does not match is reported and never
-   displayed, so unverified content never looks trustworthy. Files are never uploaded: the records hold business
-   detail that is deliberately kept off the ledger.
+1. **Search** a parcel ID. The page shows the shipment's latest update and its history, newest first. Each step is
+   marked **Verified** and links to its transaction on HashScan. Because the ledger holds only fingerprints, a step
+   reads "Shipment registered" or "Shipment updated" with its time, and nothing more.
+2. **Add shipping documents** (optional). A customer who received the record files can drop them on the page. Each
+   file's raw bytes are hashed in the browser and matched against the shipment's records; only a matching file is then
+   read, filling in the route, shipper, consignee, package and handler, and naming each step (for example "Picked up ·
+   Malaba border post"). A file that does not match is reported and never displayed. Files are never uploaded.
 
 Links such as `/?parcel=IND-2026-0041` open straight on a parcel, so a member can send a customer a verification link.
 
