@@ -22,7 +22,8 @@
     "submit": "npm run submit -w @sh/nextjs --",
     "test": "npm run test -w @sh/nextjs --",
     "token:create": "npm run token:create -w @sh/nextjs --",
-    "topic:create": "npm run topic:create -w @sh/nextjs --"
+    "topic:create": "npm run topic:create -w @sh/nextjs --",
+    "verify": "npm run verify -w @sh/nextjs --"
   },
   "devDependencies": {
     "husky": "^9.1.6",

@@ -14,7 +14,8 @@
     "submit": "tsx scripts/submitRecord.ts",
     "test": "vitest run",
     "token:create": "tsx scripts/createToken.ts",
-    "topic:create": "tsx scripts/createTopic.ts"
+    "topic:create": "tsx scripts/createTopic.ts",
+    "verify": "tsx scripts/verifyParcel.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
