@@ -69,7 +69,16 @@ export const parsePrivateKey = (text: string, label: string) => {
 };
 
 // Scripts run from packages/nextjs, but the template keeps .env at the repository root.
-export const loadEnvFile = () => config({ path: path.resolve(__dirname, "../../../.env"), quiet: true });
+export const ENV_FILE = path.resolve(__dirname, "../../../.env");
+
+// A missing .env is fine: CI and shells can supply the variables directly. Any other read failure is not.
+// Variables already set in the environment win over the file.
+export const loadEnvFile = (file = ENV_FILE, target: Env = process.env) => {
+  const { error } = config({ path: file, processEnv: target, quiet: true });
+  if (error && (error as NodeJS.ErrnoException).code !== "ENOENT") {
+    throw new Error(`Could not read ${file}: ${error.message}`);
+  }
+};
 
 // Reads <PREFIX>_ID and <PREFIX>_KEY, e.g. OPERATOR_ID and OPERATOR_KEY.
 export const readAccount = (prefix: string, env: Env = process.env) => ({
