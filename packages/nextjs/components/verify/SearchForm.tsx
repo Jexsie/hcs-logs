@@ -35,7 +35,7 @@ export const SearchForm = ({
       <div className="flex flex-col sm:flex-row gap-3">
         <input
           id="parcel-id"
-          className="input input-bordered w-full font-mono uppercase"
+          className="input input-bordered input-lg w-full font-mono uppercase"
           placeholder="e.g. IND-2026-0041"
           value={value}
           onChange={event => setValue(event.target.value)}
@@ -44,7 +44,7 @@ export const SearchForm = ({
           aria-invalid={missing}
           aria-describedby={missing ? "parcel-id-hint" : undefined}
         />
-        <button type="submit" className="btn btn-primary sm:w-36" disabled={busy}>
+        <button type="submit" className="btn btn-primary btn-lg sm:w-40" disabled={busy}>
           {busy ? <span className="loading loading-spinner loading-sm" /> : <MagnifyingGlassIcon className="h-5 w-5" />}
           Search
         </button>

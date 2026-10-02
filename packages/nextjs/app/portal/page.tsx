@@ -56,15 +56,17 @@ const Portal = ({ config }: { config: Exclude<typeof CONFIG, { error: string }> 
           <span>The wallet connection could not start: {wallet.error}</span>
         </div>
       )}
-      <WalletPanel
-        accountId={wallet.accountId}
-        ready={wallet.ready}
-        balance={balance}
-        onConnect={() => void wallet.connect()}
-        onDisconnect={() => void wallet.disconnect()}
-        onRefresh={refreshBalance}
-      />
       <RecordComposer
+        wallet={
+          <WalletPanel
+            accountId={wallet.accountId}
+            ready={wallet.ready}
+            balance={balance}
+            onConnect={() => void wallet.connect()}
+            onDisconnect={() => void wallet.disconnect()}
+            onRefresh={refreshBalance}
+          />
+        }
         network={network}
         topicId={topicId}
         tokenId={tokenId}
@@ -78,12 +80,12 @@ const Portal = ({ config }: { config: Exclude<typeof CONFIG, { error: string }> 
 };
 
 const PortalPage: NextPage = () => (
-  <div className="flex flex-col grow items-center px-4 pt-12 pb-16">
-    <div className="w-full max-w-3xl flex flex-col gap-6">
-      <div className="text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold">Member portal</h1>
-        <p className="text-base-content/70 m-0">
-          Register parcels and record their events. Each submission is approved in your wallet and paid in Freight.
+  <div className="flex flex-col grow items-center px-4 pt-8 pb-16">
+    <div className="w-full max-w-6xl flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-bold m-0">Member portal</h1>
+        <p className="text-base-content/70 m-0 mt-1">
+          Register parcels and record their events. You approve each submission in your wallet and pay in Freight.
         </p>
       </div>
       {"error" in CONFIG ? (

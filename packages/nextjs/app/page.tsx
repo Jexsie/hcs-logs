@@ -44,7 +44,7 @@ const Verifier = ({ network, mirrorUrl, topicId }: { network: HederaNetwork; mir
 
   return (
     <>
-      <div className="bg-base-100 rounded-2xl shadow-lg p-6 sm:p-8">
+      <div className="bg-base-100 rounded-box shadow-sm border border-base-300 p-5 sm:p-6">
         <SearchForm initialValue={initialParcel} busy={state.status === "loading"} onSearch={handleSearch} />
       </div>
 

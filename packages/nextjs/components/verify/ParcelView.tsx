@@ -27,7 +27,8 @@ export const ParcelView = ({
         status={describeUpdate(latest, details.get(latest.sequenceNumber)).title}
         latest={latest}
         registered={registered}
-        record={registered && details.get(registered.sequenceNumber)}
+        anchors={anchors}
+        details={details}
       />
       {changed > 0 && (
         <div className="alert alert-warning" role="alert">

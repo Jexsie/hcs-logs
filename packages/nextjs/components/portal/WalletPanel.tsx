@@ -15,7 +15,7 @@ export const WalletPanel = ({
   onDisconnect: () => void;
   onRefresh: () => void;
 }) => (
-  <section className="bg-base-100 rounded-2xl shadow-md p-6 flex flex-wrap items-center justify-between gap-4">
+  <section className="bg-base-100 rounded-box shadow-sm border border-base-300 p-5 flex flex-col gap-3">
     {accountId ? (
       <div className="flex flex-col gap-1">
         <span className="text-xs uppercase tracking-wide text-base-content/60">Connected account</span>
@@ -29,18 +29,16 @@ export const WalletPanel = ({
       </div>
     ) : (
       <div className="flex flex-col gap-1">
-        <span className="font-semibold">Connect your company wallet</span>
-        <span className="text-sm text-base-content/70">
-          Every submission is approved in your wallet and paid from your Freight balance.
-        </span>
+        <span className="font-medium">Wallet</span>
+        <span className="text-sm text-base-content/60">Not connected</span>
       </div>
     )}
     {accountId ? (
-      <button type="button" className="btn btn-outline btn-sm" onClick={onDisconnect}>
+      <button type="button" className="btn btn-ghost btn-sm self-start" onClick={onDisconnect}>
         Disconnect
       </button>
     ) : (
-      <button type="button" className="btn btn-primary" onClick={onConnect} disabled={!ready}>
+      <button type="button" className="btn btn-primary w-full" onClick={onConnect} disabled={!ready}>
         {ready ? "Connect wallet" : <span className="loading loading-spinner loading-sm" />}
       </button>
     )}

@@ -35,6 +35,7 @@ export const RecordComposer = ({
   topicFee,
   signAndExecute,
   onSubmitted,
+  wallet,
 }: {
   network: HederaNetwork;
   topicId: string;
@@ -43,6 +44,7 @@ export const RecordComposer = ({
   topicFee?: number;
   signAndExecute: (transaction: Transaction) => Promise<string>;
   onSubmitted: () => void;
+  wallet: React.ReactNode;
 }) => {
   const [text, setText] = useState("");
   const [eventParcelId, setEventParcelId] = useState("");
@@ -118,97 +120,132 @@ export const RecordComposer = ({
   const feeTooLow = topicFee !== undefined && Number(maxFee) < topicFee;
   const busy = status.state === "busy";
 
-  return (
-    <section className="bg-base-100 rounded-2xl shadow-md p-6 sm:p-8 flex flex-col gap-5">
-      <div className="flex flex-wrap items-end gap-3">
-        <button type="button" className="btn btn-outline" onClick={addParcel} disabled={busy}>
-          <PlusIcon className="h-5 w-5" />
-          Add parcel
-        </button>
-        <div className="join">
-          <input
-            className="input input-bordered join-item font-mono uppercase w-44"
-            placeholder="IND-2026-0041"
-            aria-label="Parcel ID for the event"
-            value={eventParcelId}
-            onChange={event => setEventParcelId(event.target.value)}
-          />
-          <button type="button" className="btn btn-outline join-item" onClick={() => void addEvent()} disabled={busy}>
-            <PlusIcon className="h-5 w-5" />
-            Add event
-          </button>
-        </div>
-      </div>
+  const surface = "bg-base-100 rounded-box shadow-sm border border-base-300";
 
-      <label className="flex flex-col gap-2">
-        <span className="font-medium">Record</span>
+  return (
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] items-start">
+      <section className={`${surface} p-5 sm:p-6 flex flex-col gap-4`}>
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" className="btn btn-primary btn-outline" onClick={addParcel} disabled={busy}>
+            <PlusIcon className="h-5 w-5" />
+            New parcel
+          </button>
+          <span className="text-sm text-base-content/50">or</span>
+          <div className="join w-full sm:w-auto">
+            <label className="join-item flex flex-1 min-w-0 items-center gap-2 input input-bordered sm:w-auto pr-1">
+              <span className="text-sm text-base-content/60 whitespace-nowrap">Next event for</span>
+              <input
+                className="font-mono uppercase w-full min-w-0 sm:w-36 bg-transparent outline-none"
+                placeholder="IND-2026-0041"
+                aria-label="Parcel ID for the next event"
+                value={eventParcelId}
+                onChange={event => setEventParcelId(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              className="btn btn-primary btn-outline join-item"
+              onClick={() => void addEvent()}
+              disabled={busy}
+            >
+              <PlusIcon className="h-5 w-5" />
+              Add event
+            </button>
+          </div>
+        </div>
+
         <textarea
-          className="textarea textarea-bordered font-mono text-sm min-h-72 w-full"
-          placeholder="Press Add parcel or Add event to fill in a record, then edit it if you need to."
+          className="textarea textarea-bordered rounded-xl py-2 font-mono text-sm min-h-80 lg:min-h-[30rem] w-full"
+          aria-label="Record"
+          placeholder="Start a new parcel, or add the next event to an existing one. Edit the record here if you need to."
           value={text}
           onChange={event => setText(event.target.value)}
           spellCheck={false}
         />
-        <span className="text-xs text-base-content/60">
-          This exact text is what gets recorded. Its fingerprint goes on Hedera; the text stays with the association.
-        </span>
-      </label>
+        <p className="m-0 text-xs text-base-content/60">
+          This exact text is recorded. Its fingerprint goes on Hedera; the text stays with the association.
+        </p>
+      </section>
 
-      <label className="flex flex-col gap-2 max-w-xs">
-        <span className="font-medium">Maximum fee you will pay (FRT)</span>
-        <input
-          type="number"
-          min={0}
-          step={1}
-          className={`input input-bordered w-32 ${feeTooLow ? "input-warning" : ""}`}
-          value={maxFee}
-          onChange={event => setMaxFee(event.target.value)}
-        />
-        <span className="text-xs text-base-content/60">
-          Agreed by the committee: {AGREED_MAX_FEE} FRT.
-          {topicFee !== undefined && ` The fee right now is ${topicFee} FRT.`} If the fee is higher than your maximum
-          when the submission runs, it is refused and nothing is charged.
-        </span>
-      </label>
+      <aside className="flex flex-col gap-4 lg:sticky lg:top-6">
+        {wallet}
 
-      <div className="flex flex-wrap items-center gap-4">
+        <section className={`${surface} p-5 flex flex-col gap-3`}>
+          <label htmlFor="max-fee" className="font-medium">
+            Maximum fee
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              id="max-fee"
+              type="number"
+              min={0}
+              step={1}
+              className={`input input-bordered w-24 text-lg font-semibold tabular ${feeTooLow ? "input-warning" : ""}`}
+              value={maxFee}
+              onChange={event => setMaxFee(event.target.value)}
+            />
+            <span className="font-medium">FRT</span>
+          </div>
+          <dl className="grid grid-cols-2 gap-2 m-0 text-sm">
+            <div className="rounded-field bg-base-200 px-3 py-2">
+              <dt className="text-xs text-base-content/60">Committee limit</dt>
+              <dd className="m-0 font-semibold tabular">{AGREED_MAX_FEE} FRT</dd>
+            </div>
+            <div className="rounded-field bg-base-200 px-3 py-2">
+              <dt className="text-xs text-base-content/60">Current fee</dt>
+              <dd className="m-0 font-semibold tabular">{topicFee === undefined ? "…" : `${topicFee} FRT`}</dd>
+            </div>
+          </dl>
+          <p className={`m-0 text-xs ${feeTooLow ? "text-warning font-medium" : "text-base-content/60"}`}>
+            {feeTooLow
+              ? "Below the current fee: the network will refuse this submission."
+              : "If the fee is above your maximum when it runs, the submission is refused and nothing is charged."}
+          </p>
+        </section>
+
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-lg w-full"
           onClick={() => void submit()}
           disabled={busy || !text.trim() || !accountId}
         >
           {busy && <span className="loading loading-spinner loading-sm" />}
           {draftKind === "event" ? "Submit event" : draftKind === "parcel" ? "Submit parcel" : "Submit"}
         </button>
-        {!accountId && <span className="text-sm text-base-content/60">Connect your wallet to submit.</span>}
-        {status.state === "busy" && <span className="text-sm">{status.label}</span>}
-      </div>
+        {!accountId && (
+          <p className="m-0 -mt-2 text-sm text-center text-base-content/60">Connect a wallet to submit.</p>
+        )}
+        {status.state === "busy" && (
+          <p className="m-0 -mt-2 text-sm text-center" role="status">
+            {status.label}
+          </p>
+        )}
 
-      {status.state === "error" && (
-        <div className="alert alert-error" role="alert">
-          <span>{status.message}</span>
-        </div>
-      )}
-      {status.state === "done" && (
-        <div className="alert alert-success" role="status">
-          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            {status.kind === "parcel" ? "Parcel registered" : "Event recorded"} for{" "}
-            <span className="font-mono">{status.parcelId}</span>.
-            <a
-              href={hashscanTransactionUrl(network, status.consensusTimestamp)}
-              target="_blank"
-              rel="noreferrer"
-              className="link inline-flex items-center gap-1"
-            >
-              Verified <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />
-            </a>
-            <Link href={`/?parcel=${status.parcelId}`} className="link">
-              View timeline
-            </Link>
-          </span>
-        </div>
-      )}
-    </section>
+        {status.state === "error" && (
+          <div className="alert alert-error" role="alert">
+            <span>{status.message}</span>
+          </div>
+        )}
+        {status.state === "done" && (
+          <div className="alert alert-success" role="status">
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              {status.kind === "parcel" ? "Parcel registered" : "Event recorded"} for{" "}
+              <span className="font-mono">{status.parcelId}</span>.
+              <a
+                href={hashscanTransactionUrl(network, status.consensusTimestamp)}
+                target="_blank"
+                rel="noreferrer"
+                className="link inline-flex items-center gap-1"
+              >
+                Verified <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />
+              </a>
+              <Link href={`/?parcel=${status.parcelId}`} className="link">
+                View timeline
+              </Link>
+            </span>
+          </div>
+        )}
+      </aside>
+    </div>
   );
 };
